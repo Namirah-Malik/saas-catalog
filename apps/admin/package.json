@@ -14,13 +14,15 @@
     "@tailwindcss/postcss": "^4.2.4",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "jose": "^5.9.6",
     "jsonwebtoken": "^9.0.3",
     "next": "16.2.4",
     "prisma": "5.22.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "slugify": "^1.6.9"
+    "slugify": "^1.6.9",
+    "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
