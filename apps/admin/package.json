@@ -9,9 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@base-ui/react": "^1.4.1",
     "@prisma/client": "5.22.0",
     "@tailwindcss/postcss": "^4.2.4",
     "bcryptjs": "^3.0.3",
+    "class-variance-authority": "^0.7.1",
     "jose": "^5.9.6",
     "jsonwebtoken": "^9.0.3",
     "next": "16.2.4",
