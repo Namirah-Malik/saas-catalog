@@ -2,6 +2,7 @@ import { headers } from "next/headers"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import HeroSlider from "@/components/hero-slider"
 
 export default async function HomePage({
   searchParams,
@@ -31,6 +32,7 @@ export default async function HomePage({
   })
 
   return (
+    
     <div>
       <nav style={{
         background: "#fff",
@@ -47,6 +49,7 @@ export default async function HomePage({
           {tenant.name}
         </span>
         <span style={{ fontSize: 14, color: "#64748b" }}>Product Catalog</span>
+        <HeroSlider />
       </nav>
 
       <section style={{
