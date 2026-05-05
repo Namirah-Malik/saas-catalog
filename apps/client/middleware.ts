@@ -1,18 +1,21 @@
 import { NextRequest, NextResponse } from "next/server"
 
-export function proxy(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const host = req.headers.get("host") ?? ""
   const subdomain = host.split(".")[0]
 
-  const isLocal = subdomain === "localhost" || subdomain === "127"
+  const isLocal = subdomain === "localhost" || subdomain === "127" || subdomain === "saas-catalog-client"
 
   const slug = isLocal
     ? req.nextUrl.searchParams.get("tenant") ?? "acem"
     : subdomain
 
-  const res = NextResponse.next()
-  res.headers.set("x-tenant-slug", slug)
-  return res
+  const requestHeaders = new Headers(req.headers)
+  requestHeaders.set("x-tenant-slug", slug)
+
+  return NextResponse.next({
+    request: { headers: requestHeaders }
+  })
 }
 
 export const config = {
