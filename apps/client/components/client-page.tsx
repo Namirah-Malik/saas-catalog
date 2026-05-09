@@ -36,8 +36,8 @@ export default function ClientPage({ tenant, products, categories }: Props) {
   const [heroActive, setHeroActive] = useState(true)
   const [progress, setProgress] = useState(0)
   const [scrolled, setScrolled] = useState(false)
-  const timerRef = useRef<NodeJS.Timeout>()
-  const progRef = useRef<NodeJS.Timeout>()
+  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined)
+const progRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const DURATION = 6000
   const c = tenant.primaryColor
 
