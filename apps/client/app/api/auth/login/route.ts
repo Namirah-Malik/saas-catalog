@@ -13,14 +13,23 @@ export async function POST(req: NextRequest) {
     })
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
+      return NextResponse.json(
+        { error: "Invalid email or password" },
+        { status: 401 }
+      )
     }
 
     if (!user.tenant) {
-      return NextResponse.json({ error: "No catalog found for this account" }, { status: 403 })
+      return NextResponse.json(
+        { error: "No catalog found for this account. Contact your administrator." },
+        { status: 403 }
+      )
     }
 
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "fallback-secret")
+    const secret = new TextEncoder().encode(
+      process.env.JWT_SECRET ?? "fallback-secret-change-this"
+    )
+
     const token = await new SignJWT({
       userId: user.id,
       email: user.email,
@@ -34,7 +43,8 @@ export async function POST(req: NextRequest) {
 
     const res = NextResponse.json({
       success: true,
-      tenant: { slug: user.tenant.slug, name: user.tenant.name },
+      tenantSlug: user.tenant.slug,
+      tenantName: user.tenant.name,
     })
 
     res.cookies.set("client-token", token, {
@@ -47,12 +57,10 @@ export async function POST(req: NextRequest) {
 
     return res
   } catch (error) {
-    return NextResponse.json({ error: "Server error" }, { status: 500 })
+    console.error("Login error:", error)
+    return NextResponse.json(
+      { error: "Server error. Please try again." },
+      { status: 500 }
+    )
   }
-}
-
-export async function DELETE() {
-  const res = NextResponse.json({ success: true })
-  res.cookies.delete("client-token")
-  return res
 }
