@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const tenant = searchParams.get("tenant") ?? ""
+  const tenantFromUrl = searchParams.get("tenant") ?? ""
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -40,7 +40,7 @@ function LoginForm() {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "linear-gradient(135deg, #0f0c29, #302b63)",
+      background: "linear-gradient(135deg, #0f0c29 0%, #302b63 100%)",
       fontFamily: "system-ui, sans-serif",
       padding: "2rem",
     }}>
@@ -54,23 +54,23 @@ function LoginForm() {
       }}>
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
           <div style={{
-            width: 56, height: 56, borderRadius: 16,
+            width: 60, height: 60, borderRadius: 16,
             background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 24, margin: "0 auto 1rem",
+            fontSize: 28, margin: "0 auto 1rem",
           }}>🏢</div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 6, color: "#0a0a0a" }}>
+          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, color: "#0a0a0a" }}>
             Client Portal
           </h1>
-          <p style={{ color: "#6b7280", fontSize: 14 }}>
-            Sign in with your company credentials
+          <p style={{ color: "#6b7280", fontSize: 14, lineHeight: 1.5 }}>
+            Sign in with your company credentials<br />to access your product catalog
           </p>
         </div>
 
         {error && (
           <div style={{
             background: "#fef2f2", border: "0.5px solid #fecaca",
-            borderRadius: 8, padding: "10px 14px",
+            borderRadius: 10, padding: "10px 14px",
             color: "#dc2626", fontSize: 14, marginBottom: "1.25rem",
           }}>
             {error}
@@ -79,10 +79,9 @@ function LoginForm() {
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: "1rem" }}>
-            <label style={{
-              display: "block", fontSize: 13,
-              fontWeight: 500, marginBottom: 6, color: "#374151",
-            }}>Email Address</label>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 6, color: "#374151" }}>
+              Email Address
+            </label>
             <input
               type="email"
               value={email}
@@ -92,17 +91,15 @@ function LoginForm() {
               style={{
                 width: "100%", padding: "11px 14px",
                 border: "0.5px solid #d1d5db", borderRadius: 10,
-                fontSize: 14, boxSizing: "border-box" as const,
-                outline: "none",
+                fontSize: 14, boxSizing: "border-box" as const, outline: "none",
               }}
             />
           </div>
 
           <div style={{ marginBottom: "1.75rem" }}>
-            <label style={{
-              display: "block", fontSize: 13,
-              fontWeight: 500, marginBottom: 6, color: "#374151",
-            }}>Password</label>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 6, color: "#374151" }}>
+              Password
+            </label>
             <input
               type="password"
               value={password}
@@ -112,8 +109,7 @@ function LoginForm() {
               style={{
                 width: "100%", padding: "11px 14px",
                 border: "0.5px solid #d1d5db", borderRadius: 10,
-                fontSize: 14, boxSizing: "border-box" as const,
-                outline: "none",
+                fontSize: 14, boxSizing: "border-box" as const, outline: "none",
               }}
             />
           </div>
@@ -123,24 +119,47 @@ function LoginForm() {
             disabled={loading}
             style={{
               width: "100%", padding: "13px",
-              background: loading
-                ? "#a5b4fc"
-                : "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              background: loading ? "#a5b4fc" : "linear-gradient(135deg, #6366f1, #8b5cf6)",
               color: "#fff", border: "none", borderRadius: 10,
               fontSize: 15, fontWeight: 600,
               cursor: loading ? "not-allowed" : "pointer",
-              letterSpacing: "0.01em",
             }}
           >
             {loading ? "Signing in..." : "Sign in to my catalog →"}
           </button>
         </form>
 
-        <p style={{
-          textAlign: "center", marginTop: "1.5rem",
-          fontSize: 13, color: "#9ca3af",
+        <div style={{
+          marginTop: "2rem", padding: "1rem",
+          background: "#f8fafc", borderRadius: 10,
+          border: "0.5px solid #e2e8f0",
         }}>
-          Contact your administrator if you need help logging in
+          <p style={{ fontSize: 12, color: "#64748b", marginBottom: 8, fontWeight: 500 }}>
+            Demo credentials:
+          </p>
+          {[
+            { label: "acem electroics", email: "admin@acem.com" },
+            { label: "top eectronics", email: "admin@uptop.com" },
+            { label: "nmfz electrical", email: "admin@nmfz.com" },
+          ].map(d => (
+            <div
+              key={d.email}
+              onClick={() => setEmail(d.email)}
+              style={{
+                fontSize: 12, color: "#6366f1", cursor: "pointer",
+                marginBottom: 4, padding: "2px 0",
+              }}
+            >
+              {d.label}: <span style={{ fontWeight: 500 }}>{d.email}</span>
+            </div>
+          ))}
+          <p style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>
+            Password for all: <strong>admin123</strong>
+          </p>
+        </div>
+
+        <p style={{ textAlign: "center", marginTop: "1.25rem", fontSize: 12, color: "#9ca3af" }}>
+          Contact your administrator if you need help
         </p>
       </div>
     </div>
@@ -149,7 +168,9 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0f0c29, #302b63)" }} />}>
+    <Suspense fallback={
+      <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0f0c29, #302b63)" }} />
+    }>
       <LoginForm />
     </Suspense>
   )
