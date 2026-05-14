@@ -100,27 +100,59 @@ export default function ProductsPage() {
     if (res.ok) { setProducts(prev => prev.filter(p => p.id !== id)); setDeleteConfirm(null) }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setSaving(true)
-    const body: Record<string, unknown> = {
-      name: form.name,
-      description: form.description,
-      price: form.price ? parseFloat(form.price) : null,
-      categoryId: form.categoryId || null,
-      images: form.images,
-      isVisible: form.isVisible,
-      specifications: form.specifications.reduce((acc, s) => ({ ...acc, [s.key]: s.value }), {}),
-    }
-    if (isSuperAdmin && selectedTenant) body.tenantId = selectedTenant
+ async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault()
+  setSaving(true)
 
-    const res = await fetch(
-      editingId ? `/api/products/${editingId}` : "/api/products",
-      { method: editingId ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
-    )
-    if (res.ok) { setShowForm(false); setForm(emptyForm); setEditingId(null); load() }
-    setSaving(false)
+  const baseBody = {
+    name: form.name,
+    description: form.description,
+    price: form.price ? parseFloat(form.price) : null,
+    categoryId: form.categoryId || null,
+    images: form.images,
+    isVisible: form.isVisible,
+    specifications: form.specifications.reduce(
+      (acc, s) => ({ ...acc, [s.key]: s.value }), {}
+    ),
   }
+
+  try {
+    if (editingId) {
+      await fetch(`/api/products/${editingId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(baseBody),
+      })
+    } else if (selectedTenant === "ALL") {
+      // Add to ALL tenants simultaneously
+      await Promise.all(
+        tenants.map(t =>
+          fetch("/api/products", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...baseBody, tenantId: t.id }),
+          })
+        )
+      )
+    } else {
+      await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...baseBody, tenantId: selectedTenant }),
+      })
+    }
+
+    setShowForm(false)
+    setForm(emptyForm)
+    setEditingId(null)
+    setSelectedTenant("")
+    load()
+  } catch (err) {
+    console.error(err)
+  }
+
+  setSaving(false)
+}
 
   const filtered = products.filter(p => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase())
@@ -258,16 +290,26 @@ export default function ProductsPage() {
             <form onSubmit={handleSubmit} style={{ padding: "1.5rem 2rem" }}>
 
               {/* Tenant selector (super admin only) */}
-              {isSuperAdmin && !editingId && (
-                <div style={{ ...sectionStyle, marginBottom: "1rem" }}>
-                  <label style={{ fontSize: 13, fontWeight: 600, display: "block", marginBottom: 8 }}>Company *</label>
-                  <select value={selectedTenant} onChange={e => setSelectedTenant(e.target.value)} required style={inputStyle}>
-                    <option value="">Select company...</option>
-                    {tenants.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                  </select>
-                </div>
-              )}
-
+{isSuperAdmin && !editingId && (
+  <div style={{ ...sectionStyle, marginBottom: "1rem" }}>
+    <label style={{ fontSize: 13, fontWeight: 600, display: "block", marginBottom: 8 }}>Company *</label>
+    <select value={selectedTenant} onChange={e => setSelectedTenant(e.target.value)} style={inputStyle}>
+      <option value="">Select company...</option>
+      <option value="ALL" style={{ fontWeight: 600, color: "#6366f1" }}>🌐 Add to ALL companies</option>
+      <option disabled style={{ color: "#d1d5db" }}>──────────────</option>
+      {tenants.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+    </select>
+    {selectedTenant === "ALL" && (
+      <div style={{
+        marginTop: 8, padding: "8px 12px",
+        background: "#eef2ff", border: "0.5px solid #a5b4fc",
+        borderRadius: 8, fontSize: 13, color: "#4338ca",
+      }}>
+        This product will be added to all {tenants.length} companies simultaneously.
+      </div>
+    )}
+  </div>
+)}
               {/* Basic Info */}
               <div style={sectionStyle}>
                 <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: "1rem" }}>Basic Information</h3>
@@ -382,9 +424,22 @@ export default function ProductsPage() {
               {/* Submit */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: "1rem" }}>
                 <button type="button" onClick={() => setShowForm(false)} style={{ padding: "13px", background: "#f1f5f9", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 14, fontWeight: 500 }}>Cancel</button>
-                <button type="submit" disabled={saving} style={{ padding: "13px", background: saving ? "#64748b" : "#0f172a", color: "#fff", border: "none", borderRadius: 12, cursor: saving ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 500, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                  💾 {saving ? "Saving..." : editingId ? "Update Product" : "Add Product"}
-                </button>
+               <button type="submit" disabled={saving} style={{
+  padding: "13px", background: saving ? "#64748b" : "#0f172a",
+  color: "#fff", border: "none", borderRadius: 12,
+  cursor: saving ? "not-allowed" : "pointer",
+  fontSize: 14, fontWeight: 500,
+  display: "flex", alignItems: "center", justifyContent: "center", gap: 8
+}}>
+  💾 {saving
+    ? "Saving..."
+    : editingId
+      ? "Update Product"
+      : selectedTenant === "ALL"
+        ? `Add to All ${tenants.length} Companies`
+        : "Add Product"
+  }
+</button>
               </div>
             </form>
           </div>
