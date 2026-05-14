@@ -790,7 +790,8 @@ function ProductCard({ p, c, tenant, onInquiry }: { p: Product; c: string; tenan
               : <span style={{ fontSize:13, color:"#94a3b8", fontStyle:"italic" }}>Contact for price</span>
             }
           </div>
-          <Link href={`/${tenant.slug}/products/${p.slug}`} style={{ width:36, height:36, borderRadius:"50%", background: hov ? c : "transparent", border:`1.5px solid ${hov ? c : "rgba(0,0,0,0.15)"}`, display:"flex", alignItems:"center", justifyContent:"center", color: hov ? "#fff" : "#374151", fontSize:16, textDecoration:"none", transition:"all .22s" }}>
+          
+          <Link href={`/products/${p.slug}?tenant=${tenant.slug}`} style={{ width:36, height:36, borderRadius:"50%", background: hov ? c : "transparent", border:`1.5px solid ${hov ? c : "rgba(0,0,0,0.15)"}`, display:"flex", alignItems:"center", justifyContent:"center", color: hov ? "#fff" : "#374151", fontSize:16, textDecoration:"none", transition:"all .22s" }}>
             →
           </Link>
         </div>

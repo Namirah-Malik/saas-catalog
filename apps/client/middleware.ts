@@ -6,12 +6,10 @@ export async function middleware(req: NextRequest) {
   const subdomain = host.split(".")[0]
   const pathname = req.nextUrl.pathname
 
-  const isLocal = subdomain === "localhost" || subdomain === "127"
-  const isVercel = host === "saas-catalog-client.vercel.app"
-
-  const slug = (!isLocal && !isVercel)
-    ? subdomain
-    : req.nextUrl.searchParams.get("tenant") ?? ""
+  const isVercel = host.includes("vercel.app") || host.includes("localhost")
+  const slug = isVercel
+    ? req.nextUrl.searchParams.get("tenant") ?? ""
+    : subdomain
 
   const requestHeaders = new Headers(req.headers)
   requestHeaders.set("x-tenant-slug", slug)
@@ -25,29 +23,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next({ request: { headers: requestHeaders } })
   }
 
-  if (!slug) {
-    return NextResponse.redirect(new URL("/login", req.url))
-  }
-
-  const token = req.cookies.get("client-token")?.value
-
-  if (!token) {
-    const loginUrl = new URL("/login", req.url)
-    loginUrl.searchParams.set("tenant", slug)
-    return NextResponse.redirect(loginUrl)
-  }
-
-  try {
-    const secret = new TextEncoder().encode(
-      process.env.JWT_SECRET ?? "fallback-secret"
-    )
-    await jwtVerify(token, secret)
-    return NextResponse.next({ request: { headers: requestHeaders } })
-  } catch {
-    const loginUrl = new URL("/login", req.url)
-    loginUrl.searchParams.set("tenant", slug)
-    return NextResponse.redirect(loginUrl)
-  }
+  return NextResponse.next({ request: { headers: requestHeaders } })
 }
 
 export const config = {
