@@ -2,9 +2,6 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   TYPES
-───────────────────────────────────────────────────────────────────────────── */
 interface Product {
   id: string
   name: string
