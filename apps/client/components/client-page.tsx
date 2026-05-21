@@ -3,138 +3,93 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 
 interface Product {
-  id: string
-  name: string
-  slug: string
-  description: string
-  price: number | null
-  mrp?: number | null
-  discount?: number | null
-  isHero?: boolean
-  images: string[]
-  isVisible: boolean
+  id: string; name: string; slug: string; description: string
+  price: number | null; mrp?: number | null; discount?: number | null
+  isHero?: boolean; images: string[]; isVisible: boolean
   category: { name: string; slug: string } | null
 }
 interface Category { id: string; name: string; slug: string }
 interface Tenant {
-  id: string
-  name: string
-  slug: string
-  primaryColor: string
-  logo: string | null
-  tagline?: string
-  description?: string
-  phone?: string
-  email?: string
-  address?: string
-  website?: string
+  id: string; name: string; slug: string; primaryColor: string
+  logo: string | null; tagline?: string; description?: string
+  phone?: string; email?: string; address?: string; website?: string
 }
+interface CartItem extends Product { qty: number }
 interface Props { tenant: Tenant; products: Product[]; categories: Category[] }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   HERO SLIDES
-───────────────────────────────────────────────────────────────────────────── */
 const HERO_SLIDES = [
-  {
-    eyebrow:  "INDIA'S TRUSTED POWER BRAND",
-    headline: ["Uninterrupted", "Power.", "Always."],
-    accent:   "Power.",
-    desc:     "Industrial-grade inverters & UPS systems trusted by 50,000+ customers. Zero downtime, zero compromise.",
-    label:    "INVERTERS & UPS",
-    cta:      "Explore Inverters",
-    ctaSub:   "Starting ₹4,999",
-    stats:    [{ val: "50K+", label: "Customers" }, { val: "15+", label: "Years" }, { val: "500+", label: "Dealers" }],
-    image:    "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1600&auto=format&fit=crop&q=80",
-    overlay:  "rgba(10,8,28,0.72)",
-    badge:    "🔋 New: 5kVA Lithium UPS Now Available",
-  },
-  {
-    eyebrow:  "CLEAN ENERGY FOR EVERY ROOFTOP",
-    headline: ["Solar Energy,", "Simplified", "for You."],
-    accent:   "Simplified",
-    desc:     "High-efficiency monocrystalline solar panels with 25-year performance warranty. Cut your electricity bill by up to 90%.",
-    label:    "SOLAR PANELS",
-    cta:      "Get Solar Quote",
-    ctaSub:   "Free site survey",
-    stats:    [{ val: "540W", label: "Max Wattage" }, { val: "25yr", label: "Warranty" }, { val: "21.5%", label: "Efficiency" }],
-    image:    "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1600&auto=format&fit=crop&q=80",
-    overlay:  "rgba(4,20,8,0.68)",
-    badge:    "☀️ Subsidy: PM Surya Ghar Yojana — Apply Now",
-  },
-  {
-    eyebrow:  "STORE MORE. WASTE LESS.",
-    headline: ["Next-Gen", "Battery", "Storage."],
-    accent:   "Battery",
-    desc:     "Lithium & tall-tubular batteries with smart BMS, 6000+ cycle life, and 7-year warranty. Never lose power again.",
-    label:    "BATTERY STORAGE",
-    cta:      "Compare Batteries",
-    ctaSub:   "Expert guidance free",
-    stats:    [{ val: "6000+", label: "Cycle Life" }, { val: "7yr", label: "Warranty" }, { val: "150Ah", label: "Max Capacity" }],
-    image:    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&auto=format&fit=crop&q=80",
-    overlay:  "rgba(14,4,28,0.70)",
-    badge:    "⚡ New: LiFePO4 Lithium Series Launched",
-  },
-  {
-    eyebrow:  "BUILT FOR INDIAN HOMES",
-    headline: ["5-Star ACs &", "Smart Home", "Appliances."],
-    accent:   "Smart Home",
-    desc:     "Premium inverter ACs, BLDC fans, and smart appliances engineered for Indian summers. Highest energy savings guaranteed.",
-    label:    "HOME APPLIANCES",
-    cta:      "Browse Appliances",
-    ctaSub:   "EMI from ₹999/mo",
-    stats:    [{ val: "5★", label: "Energy Rating" }, { val: "28W", label: "BLDC Fan" }, { val: "R32", label: "Eco Coolant" }],
-    image:    "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=1600&auto=format&fit=crop&q=80",
-    overlay:  "rgba(4,8,24,0.70)",
-    badge:    "🏠 New: Smart Home Range Now Available",
-  },
+  { eyebrow:"INDIA'S TRUSTED POWER BRAND", headline:["Uninterrupted","Power.","Always."], accent:"Power.", desc:"Industrial-grade inverters & UPS systems trusted by 50,000+ customers. Zero downtime, zero compromise.", label:"INVERTERS & UPS", cta:"Explore Inverters", ctaSub:"Starting ₹4,999", stats:[{val:"50K+",label:"Customers"},{val:"15+",label:"Years"},{val:"500+",label:"Dealers"}], image:"https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1600&auto=format&fit=crop&q=80", overlay:"rgba(10,8,28,0.72)", badge:"🔋 New: 5kVA Lithium UPS Now Available" },
+  { eyebrow:"CLEAN ENERGY FOR EVERY ROOFTOP", headline:["Solar Energy,","Simplified","for You."], accent:"Simplified", desc:"High-efficiency monocrystalline solar panels with 25-year performance warranty. Cut your electricity bill by up to 90%.", label:"SOLAR PANELS", cta:"Get Solar Quote", ctaSub:"Free site survey", stats:[{val:"540W",label:"Max Wattage"},{val:"25yr",label:"Warranty"},{val:"21.5%",label:"Efficiency"}], image:"https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1600&auto=format&fit=crop&q=80", overlay:"rgba(4,20,8,0.68)", badge:"☀️ Subsidy: PM Surya Ghar Yojana — Apply Now" },
+  { eyebrow:"STORE MORE. WASTE LESS.", headline:["Next-Gen","Battery","Storage."], accent:"Battery", desc:"Lithium & tall-tubular batteries with smart BMS, 6000+ cycle life, and 7-year warranty. Never lose power again.", label:"BATTERY STORAGE", cta:"Compare Batteries", ctaSub:"Expert guidance free", stats:[{val:"6000+",label:"Cycle Life"},{val:"7yr",label:"Warranty"},{val:"150Ah",label:"Max Capacity"}], image:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&auto=format&fit=crop&q=80", overlay:"rgba(14,4,28,0.70)", badge:"⚡ New: LiFePO4 Lithium Series Launched" },
+  { eyebrow:"BUILT FOR INDIAN HOMES", headline:["5-Star ACs &","Smart Home","Appliances."], accent:"Smart Home", desc:"Premium inverter ACs, BLDC fans, and smart appliances engineered for Indian summers. Highest energy savings guaranteed.", label:"HOME APPLIANCES", cta:"Browse Appliances", ctaSub:"EMI from ₹999/mo", stats:[{val:"5★",label:"Energy Rating"},{val:"28W",label:"BLDC Fan"},{val:"R32",label:"Eco Coolant"}], image:"https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=1600&auto=format&fit=crop&q=80", overlay:"rgba(4,8,24,0.70)", badge:"🏠 New: Smart Home Range Now Available" },
 ]
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   WHY CHOOSE US — updated from retailer doc
-───────────────────────────────────────────────────────────────────────────── */
 const WHY_US = [
-  { icon: "✅", title: "Genuine & Certified Products", desc: "We provide original UPS, inverters, batteries, and solar solutions from trusted brands." },
-  { icon: "⚡", title: "Fast Delivery & Installation", desc: "Quick dispatch and professional installation support for homes and businesses." },
-  { icon: "🛡️", title: "Reliable Warranty Support", desc: "Easy paperless warranty assistance with responsive after-sales service." },
-  { icon: "🏆", title: "15+ Years of Experience", desc: "Trusted since 2009 by thousands of customers across India." },
-  { icon: "💰", title: "Best Value Pricing", desc: "Competitive prices with quality products and special dealer offers." },
-  { icon: "📞", title: "Dedicated Customer Support", desc: "Friendly support team ready to assist before and after your purchase." },
+  { icon:"✅", title:"Genuine & Certified Products", desc:"We provide original UPS, inverters, batteries, and solar solutions from trusted brands." },
+  { icon:"⚡", title:"Fast Delivery & Installation", desc:"Quick dispatch and professional installation support for homes and businesses." },
+  { icon:"🛡️", title:"Reliable Warranty Support", desc:"Easy paperless warranty assistance with responsive after-sales service." },
+  { icon:"🏆", title:"15+ Years of Experience", desc:"Trusted since 2009 by thousands of customers across India." },
+  { icon:"💰", title:"Best Value Pricing", desc:"Competitive prices with quality products and special dealer offers." },
+  { icon:"📞", title:"Dedicated Customer Support", desc:"Friendly support team ready to assist before and after your purchase." },
 ]
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   TESTIMONIALS
-───────────────────────────────────────────────────────────────────────────── */
 const TESTIMONIALS = [
-  { name: "Rajesh Kumar", role: "Factory Owner, Pune", text: "Installed 4 Microtek inverters across our plant. Zero downtime in 2 years. The team was professional and after-sales support is excellent.", stars: 5, avatar: "R" },
-  { name: "Priya Nair", role: "Homeowner, Hyderabad", text: "Cut my electricity bill from ₹4,200 to ₹480/month with their 6kW solar setup. ROI in under 3 years. Highly recommend!", stars: 5, avatar: "P" },
-  { name: "Amit Sharma", role: "IT Manager, Bengaluru", text: "We've been using their UPS systems for our server room for 5 years. Flawless performance, even during extended power cuts.", stars: 5, avatar: "A" },
+  { name:"Rajesh Kumar", role:"Factory Owner, Pune", text:"Installed 4 Microtek inverters across our plant. Zero downtime in 2 years. Professional and excellent after-sales support.", stars:5, avatar:"R" },
+  { name:"Priya Nair", role:"Homeowner, Hyderabad", text:"Cut my electricity bill from ₹4,200 to ₹480/month with their 6kW solar setup. ROI in under 3 years!", stars:5, avatar:"P" },
+  { name:"Amit Sharma", role:"IT Manager, Bengaluru", text:"Using their UPS for our server room for 5 years. Flawless performance even during extended power cuts.", stars:5, avatar:"A" },
 ]
 
-const NAV_LINKS = ["Home", "Products", "Solar", "Batteries", "About", "Contact"]
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   MAIN COMPONENT
-───────────────────────────────────────────────────────────────────────────── */
 export default function ClientPage({ tenant, products, categories }: Props) {
   const c = tenant.primaryColor || "#22c55e"
-
-  const [cur, setCur]       = useState(0)
-  const [anim, setAnim]     = useState(true)
+  const [cur, setCur] = useState(0)
+  const [anim, setAnim] = useState(true)
   const [progress, setProg] = useState(0)
   const [activeCat, setActiveCat] = useState("all")
-  const [scrolled, setScrolled]   = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const [imgLoaded, setImgLoaded] = useState<boolean[]>(HERO_SLIDES.map(() => false))
   const [inquiryOpen, setInquiryOpen] = useState(false)
   const [inquiryProduct, setInquiryProduct] = useState<Product | null>(null)
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "", message: "", quantity: "" })
+  const [formData, setFormData] = useState({ name:"", email:"", phone:"", message:"", quantity:"" })
   const [formSent, setFormSent] = useState(false)
-  const [sending, setSending]   = useState(false)
+  const [sending, setSending] = useState(false)
   const [mobileMenu, setMobileMenu] = useState(false)
+  const [cart, setCart] = useState<CartItem[]>([])
+  const [cartOpen, setCartOpen] = useState(false)
+  const [cartAnim, setCartAnim] = useState<string | null>(null)
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const progRef  = useRef<ReturnType<typeof setInterval> | null>(null)
+  const progRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const DURATION = 6500
-  const slide    = HERO_SLIDES[cur]
+  const slide = HERO_SLIDES[cur]
+
+  // Load cart from localStorage
+  useEffect(() => {
+    try { const s = localStorage.getItem(`cart-${tenant.slug}`); if (s) setCart(JSON.parse(s)) } catch {}
+  }, [tenant.slug])
+
+  // Save cart
+  useEffect(() => {
+    try { localStorage.setItem(`cart-${tenant.slug}`, JSON.stringify(cart)) } catch {}
+  }, [cart, tenant.slug])
+
+  function addToCart(p: Product) {
+    setCart(prev => {
+      const ex = prev.find(i => i.id === p.id)
+      if (ex) return prev.map(i => i.id === p.id ? { ...i, qty: i.qty + 1 } : i)
+      return [...prev, { ...p, qty: 1 }]
+    })
+    setCartAnim(p.id)
+    setTimeout(() => setCartAnim(null), 700)
+  }
+
+  function removeFromCart(id: string) { setCart(prev => prev.filter(i => i.id !== id)) }
+  function updateQty(id: string, qty: number) {
+    if (qty < 1) { removeFromCart(id); return }
+    setCart(prev => prev.map(i => i.id === id ? { ...i, qty } : i))
+  }
+
+  const cartCount = cart.reduce((s, i) => s + i.qty, 0)
+  const cartTotal = cart.reduce((s, i) => s + (i.price || 0) * i.qty, 0)
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40)
@@ -144,9 +99,8 @@ export default function ClientPage({ tenant, products, categories }: Props) {
 
   useEffect(() => {
     HERO_SLIDES.forEach((s, i) => {
-      const img = new window.Image()
-      img.src = s.image
-      img.onload = () => setImgLoaded(prev => { const n = [...prev]; n[i] = true; return n })
+      const img = new window.Image(); img.src = s.image
+      img.onload = () => setImgLoaded(prev => { const n=[...prev]; n[i]=true; return n })
     })
   }, [])
 
@@ -158,15 +112,9 @@ export default function ClientPage({ tenant, products, categories }: Props) {
   }
 
   useEffect(() => {
-    setProg(0)
-    const start = Date.now()
-    progRef.current = setInterval(() => {
-      setProg(Math.min(((Date.now() - start) / DURATION) * 100, 100))
-    }, 40)
-    timerRef.current = setTimeout(() => {
-      setCur(p => (p + 1) % HERO_SLIDES.length)
-      setAnim(true); setProg(0)
-    }, DURATION)
+    setProg(0); const start = Date.now()
+    progRef.current = setInterval(() => setProg(Math.min(((Date.now()-start)/DURATION)*100,100)), 40)
+    timerRef.current = setTimeout(() => { setCur(p=>(p+1)%HERO_SLIDES.length); setAnim(true); setProg(0) }, DURATION)
     return () => { clearTimeout(timerRef.current!); clearInterval(progRef.current!) }
   }, [cur])
 
@@ -175,93 +123,96 @@ export default function ClientPage({ tenant, products, categories }: Props) {
 
   const ease = "cubic-bezier(0.25,0.46,0.45,0.94)"
   const reveal = (delay: number) => ({
-    opacity: anim ? 1 : 0,
-    filter:  anim ? "blur(0px)" : "blur(8px)",
-    transform: anim ? "translateY(0)" : "translateY(48px)",
+    opacity: anim?1:0, filter: anim?"blur(0px)":"blur(8px)",
+    transform: anim?"translateY(0)":"translateY(48px)",
     transition: `all 0.75s ${ease} ${delay}s`,
   })
 
   const handleInquiry = (product: Product | null = null) => {
     setInquiryProduct(product)
-    setFormData({ name: "", email: "", phone: "", message: product ? `Hi, I'm interested in ${product.name}.` : "", quantity: "" })
-    setFormSent(false)
-    setInquiryOpen(true)
-    setMobileMenu(false)
+    setFormData({ name:"", email:"", phone:"", message:product?`Hi, I'm interested in ${product.name}.`:"", quantity:"" })
+    setFormSent(false); setInquiryOpen(true); setMobileMenu(false)
   }
 
   const submitInquiry = async () => {
     if (!formData.name || !formData.phone) return
     setSending(true)
     try {
-      await fetch("/api/inquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name, email: formData.email,
-          phone: formData.phone,
-          message: formData.message || `Enquiry about ${inquiryProduct?.name || tenant.name}`,
-          tenantId: tenant.id,
-          productId: inquiryProduct?.id || null,
-        }),
-      })
+      await fetch("/api/inquiries", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ name:formData.name, email:formData.email, phone:formData.phone, message:formData.message||`Enquiry about ${inquiryProduct?.name||tenant.name}`, tenantId:tenant.id, productId:inquiryProduct?.id||null }) })
     } catch {}
-    setSending(false)
-    setFormSent(true)
+    setSending(false); setFormSent(true)
     setTimeout(() => setInquiryOpen(false), 2200)
   }
 
-  return (
-    <div style={{ fontFamily: "'Plus Jakarta Sans','Inter',system-ui,sans-serif", background: "#fff", color: "#0f172a" }}>
+  const iStyle = { width:"100%", padding:"10px 13px", borderRadius:10, border:"1.5px solid #e5e7eb", fontSize:14, color:"#111827", background:"#fff", outline:"none", fontFamily:"inherit", boxSizing:"border-box" as const }
 
-      {/* ════════════════════ NAVBAR ════════════════════ */}
-      <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        height: 64,
-        background: scrolled ? "rgba(255,255,255,0.97)" : "transparent",
-        backdropFilter: scrolled ? "blur(20px)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(0,0,0,0.07)" : "none",
-        padding: "0 clamp(1rem,5vw,4rem)",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        transition: "all 0.4s ease",
-      }}>
-        {/* Logo */}
-        <Link href={`/?tenant=${tenant.slug}`} style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
+  return (
+    <div style={{ fontFamily:"'Plus Jakarta Sans','Inter',system-ui,sans-serif", background:"#fff", color:"#0f172a" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        *{box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        @keyframes floatP{0%,100%{transform:translateY(0) scale(1);opacity:.18}50%{transform:translateY(-22px) scale(1.5);opacity:.55}}
+        @keyframes pulseOrb{0%,100%{transform:scale(1);opacity:.65}50%{transform:scale(1.07);opacity:1}}
+        @keyframes scrollWheel{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(8px);opacity:.2}}
+        @keyframes pingDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+        @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-33.333%)}}
+        @keyframes modalIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes cartPop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
+        @keyframes slideLeft{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+        @media(max-width:768px){
+          .desktop-only{display:none!important}
+          .hero-thumbs{display:none!important}
+          .trust-badges{display:none!important}
+          .footer-grid{grid-template-columns:1fr 1fr!important}
+          .inquiry-grid{grid-template-columns:1fr!important}
+        }
+        @media(max-width:480px){
+          .footer-grid{grid-template-columns:1fr!important}
+        }
+      `}</style>
+
+      {/* ─── NAVBAR ─── */}
+      <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:200, height:60, background:scrolled?"rgba(255,255,255,0.97)":"transparent", backdropFilter:scrolled?"blur(20px)":"none", borderBottom:scrolled?"1px solid rgba(0,0,0,0.07)":"none", padding:"0 clamp(1rem,4vw,3rem)", display:"flex", alignItems:"center", justifyContent:"space-between", transition:"all 0.4s ease" }}>
+        <Link href={`/?tenant=${tenant.slug}`} style={{ textDecoration:"none", display:"flex", alignItems:"center", gap:8 }}>
           {tenant.logo
-            ? <img src={tenant.logo} alt={tenant.name} style={{ height: 32, width: "auto" }}/>
-            : <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: c, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 16px ${c}60` }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#fff" strokeWidth="1"/></svg>
+            ? <img src={tenant.logo} alt={tenant.name} style={{ height:32 }}/>
+            : <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                <div style={{ width:32, height:32, borderRadius:8, background:c, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:`0 0 16px ${c}60`, flexShrink:0 }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#fff"/></svg>
                 </div>
-                <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-0.3px", color: scrolled ? "#0f172a" : "#fff" }}>
-                  {tenant.name.split(" ")[0]}<span style={{ color: c }}>{tenant.name.split(" ").length > 1 ? " " + tenant.name.split(" ").slice(1).join(" ") : ""}</span>
+                <span style={{ fontSize:16, fontWeight:800, letterSpacing:"-0.3px", color:scrolled?"#0f172a":"#fff", whiteSpace:"nowrap" }}>
+                  {tenant.name.split(" ")[0]}<span style={{ color:c }}>{tenant.name.split(" ").length>1?" "+tenant.name.split(" ").slice(1).join(" "):""}</span>
                 </span>
               </div>
           }
         </Link>
 
-        {/* Desktop nav pill */}
-        <div style={{ display: "flex", gap: 2, alignItems: "center", background: scrolled ? "#f8fafc" : "rgba(255,255,255,0.08)", border: `1px solid ${scrolled ? "#e2e8f0" : "rgba(255,255,255,0.15)"}`, borderRadius: 50, padding: "5px 6px", backdropFilter: "blur(8px)" }}>
-          {NAV_LINKS.map((n, i) => (
-            <a key={n}
-              href={n === "Home" ? `/?tenant=${tenant.slug}` : n === "Products" ? "#products" : n === "About" || n === "Contact" ? "#contact" : "#products"}
-              style={{ padding: "7px 14px", borderRadius: 50, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: i === 0 ? 600 : 400, background: i === 0 ? (scrolled ? c : "rgba(255,255,255,0.15)") : "transparent", color: i === 0 ? "#fff" : (scrolled ? "#64748b" : "rgba(255,255,255,0.65)"), transition: "all .2s", textDecoration: "none", display: "block" }}>
-              {n}
-            </a>
+        {/* Desktop nav */}
+        <div className="desktop-only" style={{ display:"flex", gap:2, alignItems:"center", background:scrolled?"#f8fafc":"rgba(255,255,255,0.08)", border:`1px solid ${scrolled?"#e2e8f0":"rgba(255,255,255,0.15)"}`, borderRadius:50, padding:"4px 5px", backdropFilter:"blur(8px)" }}>
+          {["Home","Products","Why Us","Contact"].map((n,i) => (
+            <a key={n} href={n==="Home"?`/?tenant=${tenant.slug}`:n==="Products"?"#products":n==="Why Us"?"#why-us":"#contact"} style={{ padding:"6px 14px", borderRadius:50, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:12, fontWeight:i===0?600:400, background:i===0?(scrolled?c:"rgba(255,255,255,0.15)"):"transparent", color:i===0?"#fff":(scrolled?"#64748b":"rgba(255,255,255,0.65)"), transition:"all .2s", textDecoration:"none", display:"block" }}>{n}</a>
           ))}
         </div>
 
-        {/* Right side: CTA + hamburger */}
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <button onClick={() => handleInquiry()} style={{ padding: "9px 20px", borderRadius: 8, background: c, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 14px ${c}50`, transition: "transform .15s,box-shadow .15s" }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)"; (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 6px 20px ${c}65` }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = ""; (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 4px 14px ${c}50` }}>
+        <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+          {/* Cart button */}
+          <button onClick={() => setCartOpen(true)} style={{ position:"relative", width:40, height:40, borderRadius:10, border:`1px solid ${scrolled?"#e2e8f0":"rgba(255,255,255,0.25)"}`, background:scrolled?"#fff":"rgba(255,255,255,0.1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={scrolled?"#374151":"#fff"} strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            {cartCount > 0 && (
+              <span style={{ position:"absolute", top:-6, right:-6, minWidth:18, height:18, borderRadius:99, background:c, color:"#fff", fontSize:10, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 4px", animation:cartAnim?"cartPop 0.7s ease":"none" }}>{cartCount}</span>
+            )}
+          </button>
+
+          {/* CTA */}
+          <button onClick={() => handleInquiry()} className="desktop-only" style={{ padding:"8px 18px", borderRadius:8, background:c, color:"#fff", border:"none", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit", boxShadow:`0 4px 14px ${c}50` }}>
             Get Free Quote
           </button>
+
           {/* Hamburger */}
-          <button onClick={() => setMobileMenu(!mobileMenu)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", flexDirection: "column", gap: 5 }}>
+          <button onClick={() => setMobileMenu(!mobileMenu)} style={{ background:"none", border:"none", cursor:"pointer", padding:4, display:"flex", flexDirection:"column", gap:5 }}>
             {[0,1,2].map(i => (
-              <div key={i} style={{ width: 22, height: 2, borderRadius: 2, background: scrolled ? "#0f172a" : "#fff", transition: "all 0.2s",
-                transform: mobileMenu ? (i===0 ? "rotate(45deg) translate(5px,5px)" : i===2 ? "rotate(-45deg) translate(5px,-5px)" : "scaleX(0)") : "none" }} />
+              <div key={i} style={{ width:22, height:2, borderRadius:2, background:scrolled?"#0f172a":"#fff", transition:"all 0.2s", transform:mobileMenu?(i===0?"rotate(45deg) translate(5px,5px)":i===2?"rotate(-45deg) translate(5px,-5px)":"scaleX(0)"):"none" }}/>
             ))}
           </button>
         </div>
@@ -269,118 +220,113 @@ export default function ClientPage({ tenant, products, categories }: Props) {
 
       {/* Mobile menu */}
       {mobileMenu && (
-        <div style={{ position: "fixed", top: 64, left: 0, right: 0, background: "#fff", borderBottom: "1px solid #f1f5f9", padding: "1rem", zIndex: 99, boxShadow: "0 8px 32px rgba(0,0,0,0.1)" }}>
-          {[{ label: "Products", href: "#products" }, { label: "Why Us", href: "#why-us" }, { label: "Contact", href: "#contact" }].map(l => (
-            <a key={l.label} href={l.href} onClick={() => setMobileMenu(false)} style={{ display: "block", padding: "12px 16px", fontSize: 15, fontWeight: 500, color: "#374151", textDecoration: "none", borderBottom: "1px solid #f8fafc" }}>{l.label}</a>
+        <div style={{ position:"fixed", top:60, left:0, right:0, background:"#fff", borderBottom:"1px solid #f1f5f9", padding:"1rem", zIndex:199, boxShadow:"0 8px 32px rgba(0,0,0,0.1)" }}>
+          {[{label:"Products",href:"#products"},{label:"Why Us",href:"#why-us"},{label:"Contact",href:"#contact"}].map(l => (
+            <a key={l.label} href={l.href} onClick={() => setMobileMenu(false)} style={{ display:"block", padding:"12px 16px", fontSize:15, fontWeight:500, color:"#374151", textDecoration:"none", borderBottom:"1px solid #f8fafc" }}>{l.label}</a>
           ))}
-          <button onClick={() => handleInquiry()} style={{ width: "100%", marginTop: 12, padding: "12px", background: c, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>📞 Get Free Quote</button>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginTop:12 }}>
+            <button onClick={() => { setCartOpen(true); setMobileMenu(false) }} style={{ padding:"12px", background:"#f8fafc", color:"#374151", border:"1px solid #e2e8f0", borderRadius:10, fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
+              🛒 Cart ({cartCount})
+            </button>
+            <button onClick={() => handleInquiry()} style={{ padding:"12px", background:c, color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
+              Get Free Quote
+            </button>
+          </div>
         </div>
       )}
 
-      {/* ════════════════════ HERO SLIDER ════════════════════ */}
-      <section style={{ position: "relative", width: "100%", height: "100vh", minHeight: 580, overflow: "hidden" }}>
-
-        {HERO_SLIDES.map((s, i) => (
-          <div key={i} style={{ position: "absolute", inset: 0, backgroundImage: imgLoaded[i] ? `url(${s.image})` : "none", backgroundSize: "cover", backgroundPosition: "center", backgroundColor: "#0a0a14", opacity: i === cur ? 1 : 0, transition: "opacity 1.2s cubic-bezier(0.4,0,0.2,1)" }}>
-            <div style={{ position: "absolute", inset: 0, background: s.overlay }} />
+      {/* ─── HERO SLIDER ─── */}
+      <section style={{ position:"relative", width:"100%", height:"100vh", minHeight:580, overflow:"hidden" }}>
+        {HERO_SLIDES.map((s,i) => (
+          <div key={i} style={{ position:"absolute", inset:0, backgroundImage:imgLoaded[i]?`url(${s.image})`:"none", backgroundSize:"cover", backgroundPosition:"center", backgroundColor:"#0a0a14", opacity:i===cur?1:0, transition:"opacity 1.2s cubic-bezier(0.4,0,0.2,1)" }}>
+            <div style={{ position:"absolute", inset:0, background:s.overlay }}/>
           </div>
         ))}
+        <div style={{ position:"absolute", inset:0, zIndex:1, pointerEvents:"none", background:"linear-gradient(to right,rgba(0,0,0,0.7) 0%,rgba(0,0,0,0.35) 55%,transparent 100%)" }}/>
+        <div style={{ position:"absolute", inset:0, zIndex:1, pointerEvents:"none", background:"linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 50%)" }}/>
+        <div style={{ position:"absolute", inset:0, zIndex:1, pointerEvents:"none", backgroundImage:"linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px)", backgroundSize:"80px 80px" }}/>
 
-        <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.35) 55%, transparent 100%)" }} />
-        <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 50%)" }} />
-        <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", backgroundImage: "linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px)", backgroundSize: "80px 80px" }} />
-
-        <div style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none" }}>
+        <div style={{ position:"absolute", inset:0, zIndex:2, pointerEvents:"none" }}>
           {[[12,18,0,3.2],[78,55,0.9,4],[42,82,1.6,3.6],[88,22,2.3,5],[22,68,3.1,4.4],[65,38,0.5,3.8]].map(([x,y,d,dur],i) => (
-            <div key={i} style={{ position: "absolute", left:`${x}%`, top:`${y}%`, width:4, height:4, borderRadius:"50%", background:"rgba(255,255,255,0.22)", animation:`floatP ${dur}s ease-in-out ${d}s infinite` }} />
+            <div key={i} style={{ position:"absolute", left:`${x}%`, top:`${y}%`, width:4, height:4, borderRadius:"50%", background:"rgba(255,255,255,0.22)", animation:`floatP ${dur}s ease-in-out ${d}s infinite` }}/>
           ))}
-          <div style={{ position:"absolute", right:"10%", top:"25%", width:280, height:280, borderRadius:"50%", background:`radial-gradient(circle,${c}18 0%,transparent 70%)`, animation:"pulseOrb 5s ease-in-out infinite" }} />
+          <div style={{ position:"absolute", right:"10%", top:"25%", width:280, height:280, borderRadius:"50%", background:`radial-gradient(circle,${c}18 0%,transparent 70%)`, animation:"pulseOrb 5s ease-in-out infinite" }}/>
         </div>
 
-        {/* Badge */}
         <div style={{ position:"absolute", top:80, left:"50%", transform:"translateX(-50%)", zIndex:10, opacity:anim?1:0, transition:"opacity .5s ease .1s", whiteSpace:"nowrap" }}>
-          <div style={{ padding:"6px 18px", borderRadius:50, background:`rgba(34,197,94,0.12)`, border:`1px solid ${c}55`, backdropFilter:"blur(8px)", fontSize:11.5, fontWeight:600, color:c, display:"flex", alignItems:"center", gap:6 }}>
+          <div style={{ padding:"6px 18px", borderRadius:50, background:"rgba(34,197,94,0.12)", border:`1px solid ${c}55`, backdropFilter:"blur(8px)", fontSize:11.5, fontWeight:600, color:c, display:"flex", alignItems:"center", gap:6 }}>
             <span style={{ width:6, height:6, borderRadius:"50%", background:c, display:"inline-block", animation:"pingDot 2s infinite" }}/>
             {slide.badge}
           </div>
         </div>
 
-        {/* Main content */}
         <div style={{ position:"absolute", inset:0, zIndex:10, display:"flex", flexDirection:"column", justifyContent:"center", padding:"0 clamp(1.25rem,8vw,5rem)", paddingTop:80 }}>
           <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20, ...reveal(0.1) }}>
             <div style={{ width:28, height:2, background:c, borderRadius:2 }}/>
             <span style={{ fontSize:10.5, fontWeight:700, letterSpacing:"0.22em", color:"rgba(255,255,255,0.5)" }}>{slide.eyebrow}</span>
           </div>
-
           <div style={{ marginBottom:24 }}>
-            {slide.headline.map((line, i) => (
-              <div key={i} style={{ fontSize:"clamp(2.4rem,8vw,6.5rem)", fontWeight:800, lineHeight:1.0, letterSpacing:"-0.04em", color:"#fff", ...reveal(0.2 + i * 0.09) }}>
-                {line === slide.accent ? <span style={{ color:c }}>{line}</span> : line}
+            {slide.headline.map((line,i) => (
+              <div key={i} style={{ fontSize:"clamp(2.2rem,8vw,6.5rem)", fontWeight:800, lineHeight:1.0, letterSpacing:"-0.04em", color:"#fff", ...reveal(0.2+i*0.09) }}>
+                {line===slide.accent?<span style={{ color:c }}>{line}</span>:line}
               </div>
             ))}
           </div>
-
-          <p style={{ fontSize:"clamp(14px,1.5vw,16px)", color:"rgba(255,255,255,0.62)", maxWidth:460, lineHeight:1.75, marginBottom:32, ...reveal(0.42) }}>
-            {slide.desc}
-          </p>
-
-          <div style={{ display:"flex", alignItems:"center", gap:14, flexWrap:"wrap", marginBottom:44, ...reveal(0.52) }}>
-            <button onClick={() => handleInquiry()} style={{ display:"flex", alignItems:"center", gap:8, padding:"13px 26px", background:c, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", boxShadow:`0 6px 22px ${c}55`, transition:"transform .2s,box-shadow .2s" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform="translateY(-2px)"; (e.currentTarget as HTMLButtonElement).style.boxShadow=`0 10px 30px ${c}70` }}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform=""; (e.currentTarget as HTMLButtonElement).style.boxShadow=`0 6px 22px ${c}55` }}>
+          <p style={{ fontSize:"clamp(13px,1.5vw,16px)", color:"rgba(255,255,255,0.62)", maxWidth:460, lineHeight:1.75, marginBottom:28, ...reveal(0.42) }}>{slide.desc}</p>
+          <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap", marginBottom:36, ...reveal(0.52) }}>
+            <button onClick={() => handleInquiry()} style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 24px", background:c, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", boxShadow:`0 6px 22px ${c}55` }}>
               {slide.cta}
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9,18 15,12 9,6"/></svg>
             </button>
-            <a href="#products" style={{ padding:"13px 22px", background:"rgba(255,255,255,0.09)", backdropFilter:"blur(8px)", color:"#fff", border:"1px solid rgba(255,255,255,0.18)", borderRadius:8, fontSize:14, fontWeight:500, cursor:"pointer", fontFamily:"inherit", textDecoration:"none" }}>
-              View Catalogue
-            </a>
+            <a href="#products" style={{ padding:"12px 20px", background:"rgba(255,255,255,0.09)", backdropFilter:"blur(8px)", color:"#fff", border:"1px solid rgba(255,255,255,0.18)", borderRadius:8, fontSize:14, fontWeight:500, textDecoration:"none" }}>Browse Products</a>
             <span style={{ fontSize:12, color:"rgba(255,255,255,0.35)", display:"flex", alignItems:"center", gap:6 }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.67 4.18 2 2 0 012.48 2H5.5a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 9.9a16 16 0 006.29 6.29l1.26-1.26a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
               {slide.ctaSub}
             </span>
           </div>
-
-          <div style={{ display:"flex", gap:28, alignItems:"center", ...reveal(0.62) }}>
+          <div style={{ display:"flex", gap:24, alignItems:"center", flexWrap:"wrap", ...reveal(0.62) }}>
             {slide.stats.map((s,i) => (
               <div key={i} style={{ display:"flex", flexDirection:"column", gap:2 }}>
-                <span style={{ fontSize:"clamp(1.1rem,2.2vw,1.7rem)", fontWeight:800, color:"#fff", letterSpacing:"-0.03em" }}>{s.val}</span>
-                <span style={{ fontSize:10.5, color:"rgba(255,255,255,0.4)", fontWeight:500, letterSpacing:"0.06em" }}>{s.label}</span>
+                <span style={{ fontSize:"clamp(1rem,2.2vw,1.7rem)", fontWeight:800, color:"#fff", letterSpacing:"-0.03em" }}>{s.val}</span>
+                <span style={{ fontSize:10, color:"rgba(255,255,255,0.4)", fontWeight:500, letterSpacing:"0.06em" }}>{s.label}</span>
               </div>
-            )).reduce<React.ReactNode[]>((acc,el,i) => { if(i>0) acc.push(<div key={`d${i}`} style={{ width:1, height:28, background:"rgba(255,255,255,0.12)" }}/>); acc.push(el); return acc }, [])}
+            )).reduce<React.ReactNode[]>((acc,el,i) => { if(i>0) acc.push(<div key={`d${i}`} style={{ width:1, height:24, background:"rgba(255,255,255,0.12)" }}/>); acc.push(el); return acc },[])}
           </div>
         </div>
 
-        {/* Slide thumbnails right */}
-        <div style={{ position:"absolute", right:"clamp(1rem,4vw,3rem)", top:"50%", transform:"translateY(-50%)", zIndex:15, display:"flex", flexDirection:"column", gap:10 }}>
+        {/* Thumbnails - desktop only */}
+        <div className="hero-thumbs" style={{ position:"absolute", right:"clamp(1rem,4vw,3rem)", top:"50%", transform:"translateY(-50%)", zIndex:15, display:"flex", flexDirection:"column", gap:10 }}>
           {HERO_SLIDES.map((s,i) => {
-            const isAct = i===cur
+            const isAct=i===cur
             return (
-              <div key={i} onClick={() => goTo(i)} style={{ width:isAct?185:42, height:52, borderRadius:10, overflow:"hidden", cursor:"pointer", transition:"width 0.5s cubic-bezier(0.4,0,0.2,1),opacity .3s", opacity:isAct?1:0.45, position:"relative", border:`1px solid ${isAct?c:"rgba(255,255,255,0.14)"}`, boxShadow:isAct?`0 0 18px ${c}40`:"none", flexShrink:0 }}>
+              <div key={i} onClick={()=>goTo(i)} style={{ width:isAct?185:42, height:50, borderRadius:10, overflow:"hidden", cursor:"pointer", transition:"width 0.5s cubic-bezier(0.4,0,0.2,1),opacity .3s", opacity:isAct?1:0.45, position:"relative", border:`1px solid ${isAct?c:"rgba(255,255,255,0.14)"}`, flexShrink:0 }}>
                 <div style={{ position:"absolute", inset:0, backgroundImage:`url(${s.image})`, backgroundSize:"cover", backgroundPosition:"center", filter:isAct?"none":"grayscale(60%)" }}/>
                 <div style={{ position:"absolute", inset:0, background:isAct?"rgba(0,0,0,0.38)":"rgba(0,0,0,0.58)" }}/>
-                {isAct && <div style={{ position:"absolute", inset:0, padding:"0 10px", display:"flex", alignItems:"center", fontSize:9, fontWeight:700, color:"#fff", letterSpacing:"0.09em", whiteSpace:"nowrap" }}>{s.label}</div>}
-                {isAct && <div style={{ position:"absolute", right:8, top:"50%", transform:"translateY(-50%)", width:6, height:6, borderRadius:"50%", background:c, boxShadow:`0 0 8px ${c}` }}/>}
+                {isAct&&<div style={{ position:"absolute", inset:0, padding:"0 10px", display:"flex", alignItems:"center", fontSize:9, fontWeight:700, color:"#fff", letterSpacing:"0.09em", whiteSpace:"nowrap" }}>{s.label}</div>}
               </div>
             )
           })}
         </div>
 
-        {/* Bottom bar */}
-        <div style={{ position:"absolute", bottom:0, left:0, right:0, zIndex:20, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px clamp(1.25rem,6vw,4rem)", background:"linear-gradient(to top,rgba(0,0,0,0.5) 0%,transparent 100%)" }}>
+        {/* Mobile dots */}
+        <div style={{ position:"absolute", bottom:48, left:"50%", transform:"translateX(-50%)", zIndex:20, display:"flex", gap:8 }} className="mobile-dots">
+          {HERO_SLIDES.map((_,i) => (
+            <div key={i} onClick={()=>goTo(i)} style={{ width:cur===i?20:6, height:6, borderRadius:3, background:cur===i?"#fff":"rgba(255,255,255,0.35)", cursor:"pointer", transition:"all 0.3s ease" }}/>
+          ))}
+        </div>
+
+        <div style={{ position:"absolute", bottom:0, left:0, right:0, zIndex:20, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px clamp(1.25rem,6vw,4rem)", background:"linear-gradient(to top,rgba(0,0,0,0.5) 0%,transparent 100%)" }}>
           <span style={{ fontSize:11, color:"rgba(255,255,255,0.3)", letterSpacing:"0.12em", fontWeight:600 }}>
-            {String(cur+1).padStart(2,"0")} <span style={{ color:"rgba(255,255,255,0.12)",margin:"0 5px" }}>/</span> {String(HERO_SLIDES.length).padStart(2,"0")}
+            {String(cur+1).padStart(2,"0")} / {String(HERO_SLIDES.length).padStart(2,"0")}
           </span>
-          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:5, opacity:.35 }}>
-            <div style={{ width:18, height:28, border:"1px solid rgba(255,255,255,0.5)", borderRadius:10, display:"flex", justifyContent:"center", paddingTop:6 }}>
-              <div style={{ width:2, height:6, background:"#fff", borderRadius:2, animation:"scrollWheel 2s infinite" }}/>
+          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:4, opacity:.35 }}>
+            <div style={{ width:16, height:26, border:"1px solid rgba(255,255,255,0.5)", borderRadius:10, display:"flex", justifyContent:"center", paddingTop:5 }}>
+              <div style={{ width:2, height:5, background:"#fff", borderRadius:2, animation:"scrollWheel 2s infinite" }}/>
             </div>
-            <span style={{ fontSize:9, color:"rgba(255,255,255,0.5)", letterSpacing:"0.15em", fontWeight:600 }}>SCROLL</span>
           </div>
-          <div style={{ display:"flex", gap:18, alignItems:"center" }}>
-            {[{icon:"🔒",text:"BIS Certified"},{icon:"✓",text:"ISO 9001:2015"},{icon:"⭐",text:"4.9 Rated"}].map(b => (
-              <div key={b.text} style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"rgba(255,255,255,0.38)", fontWeight:500 }}>
-                <span>{b.icon}</span>{b.text}
-              </div>
+          <div className="trust-badges" style={{ display:"flex", gap:14, alignItems:"center" }}>
+            {[{icon:"🔒",text:"BIS"},{icon:"✓",text:"ISO"},{icon:"⭐",text:"4.9"}].map(b => (
+              <div key={b.text} style={{ display:"flex", alignItems:"center", gap:4, fontSize:10, color:"rgba(255,255,255,0.38)", fontWeight:500 }}><span>{b.icon}</span>{b.text}</div>
             ))}
           </div>
         </div>
@@ -390,107 +336,99 @@ export default function ClientPage({ tenant, products, categories }: Props) {
         </div>
       </section>
 
-      {/* ════════════════════ MARQUEE TRUST STRIP ════════════════════ */}
-      <div style={{ background:"#0f172a", padding:"14px 0", overflow:"hidden", position:"relative" }}>
-        <div style={{ display:"flex", gap:0, animation:"marquee 30s linear infinite", width:"max-content" }}>
+      {/* ─── MARQUEE ─── */}
+      <div style={{ background:"#0f172a", padding:"12px 0", overflow:"hidden" }}>
+        <div style={{ display:"flex", animation:"marquee 30s linear infinite", width:"max-content" }}>
           {[...Array(3)].map((_,rep) => (
-            <div key={rep} style={{ display:"flex", gap:0, flexShrink:0 }}>
-              {["✦ 50,000+ Happy Customers","✦ 500+ Dealer Network","✦ BIS & ISO Certified","✦ 15+ Years Experience","✦ 25-Year Solar Warranty","✦ 7-Year Battery Warranty","✦ Pan-India Delivery","✦ 24/7 Service Support"].map(t => (
-                <span key={t} style={{ fontSize:12, fontWeight:600, color:"rgba(255,255,255,0.45)", letterSpacing:"0.08em", padding:"0 36px", whiteSpace:"nowrap" }}>{t}</span>
+            <div key={rep} style={{ display:"flex", flexShrink:0 }}>
+              {["✦ 50,000+ Happy Customers","✦ 500+ Dealer Network","✦ BIS & ISO Certified","✦ 15+ Years Experience","✦ Genuine Products","✦ Pan-India Delivery","✦ 7-Year Battery Warranty","✦ 24/7 Support"].map(t => (
+                <span key={t} style={{ fontSize:12, fontWeight:600, color:"rgba(255,255,255,0.45)", letterSpacing:"0.08em", padding:"0 32px", whiteSpace:"nowrap" }}>{t}</span>
               ))}
             </div>
           ))}
         </div>
       </div>
 
-      {/* ════════════════════ CTA BANNER — from retailer doc ════════════════════ */}
-      <div style={{ background:`linear-gradient(135deg, ${c}15 0%, ${c}06 100%)`, borderBottom:`1px solid ${c}20`, padding:"1.75rem clamp(1.25rem,5vw,3rem)" }}>
+      {/* ─── CTA BANNER ─── */}
+      <div style={{ background:`linear-gradient(135deg,${c}15 0%,${c}06 100%)`, borderBottom:`1px solid ${c}20`, padding:"1.5rem clamp(1.25rem,5vw,3rem)" }}>
         <div style={{ maxWidth:960, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
           <div>
-            <h2 style={{ fontSize:"clamp(1rem,3vw,1.4rem)", fontWeight:700, color:"#0f172a", marginBottom:4 }}>
-              Power Backup Solutions You Can Trust
-            </h2>
-            <p style={{ fontSize:14, color:"#475569", lineHeight:1.6 }}>
-              From small shops to offices and homes, we provide genuine products with fast delivery and service support.
-            </p>
+            <h2 style={{ fontSize:"clamp(1rem,3vw,1.35rem)", fontWeight:700, color:"#0f172a", marginBottom:4 }}>Power Backup Solutions You Can Trust</h2>
+            <p style={{ fontSize:14, color:"#475569", lineHeight:1.6 }}>From small shops to offices and homes — genuine products, fast delivery, service support.</p>
           </div>
-          <button onClick={() => handleInquiry()} style={{ padding:"12px 28px", background:c, color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", flexShrink:0, boxShadow:`0 4px 14px ${c}45` }}>
-            📞 Contact Us
-          </button>
+          <button onClick={() => handleInquiry()} style={{ padding:"11px 24px", background:c, color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", flexShrink:0, boxShadow:`0 4px 14px ${c}45` }}>📞 Contact Us</button>
         </div>
       </div>
 
-      {/* ════════════════════ FEATURED PRODUCTS ════════════════════ */}
+      {/* ─── FEATURED ─── */}
       {heroProducts.length > 0 && (
-        <section style={{ padding:"4rem clamp(1.25rem,5vw,4rem)", background:"#fff" }}>
+        <section style={{ padding:"3rem clamp(1rem,5vw,3rem)", background:"#fff" }}>
           <div style={{ maxWidth:1400, margin:"0 auto" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:"2.5rem" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:"2rem" }}>
               <div>
-                <div style={{ fontSize:12, fontWeight:700, color:c, letterSpacing:"0.15em", marginBottom:8 }}>⭐ FEATURED PICKS</div>
-                <h2 style={{ fontSize:"clamp(1.4rem,3.5vw,2.2rem)", fontWeight:800, letterSpacing:"-0.03em", lineHeight:1.1 }}>Editor's Choice</h2>
+                <div style={{ fontSize:11, fontWeight:700, color:c, letterSpacing:"0.15em", marginBottom:6 }}>⭐ FEATURED PICKS</div>
+                <h2 style={{ fontSize:"clamp(1.3rem,3.5vw,2rem)", fontWeight:800, letterSpacing:"-0.03em" }}>Editor's Choice</h2>
               </div>
-              <a href="#products" style={{ fontSize:13, fontWeight:600, color:c, background:"none", border:`1.5px solid ${c}`, borderRadius:8, padding:"9px 18px", cursor:"pointer", fontFamily:"inherit", textDecoration:"none" }}>View All →</a>
+              <a href="#products" style={{ fontSize:13, fontWeight:600, color:c, border:`1.5px solid ${c}`, borderRadius:8, padding:"8px 16px", textDecoration:"none" }}>View All →</a>
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,270px),1fr))", gap:18 }}>
-              {heroProducts.map(p => <ProductCard key={p.id} p={p} c={c} tenant={tenant} onInquiry={() => handleInquiry(p)}/>)}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,240px),1fr))", gap:16 }}>
+              {heroProducts.map(p => <ProductCard key={p.id} p={p} c={c} tenant={tenant} onInquiry={()=>handleInquiry(p)} onAddToCart={()=>addToCart(p)} isAnimating={cartAnim===p.id}/>)}
             </div>
           </div>
         </section>
       )}
 
-      {/* ════════════════════ ALL PRODUCTS ════════════════════ */}
-      <section id="products" style={{ padding:"4rem clamp(1.25rem,5vw,4rem)", background:"#f8fafc" }}>
+      {/* ─── ALL PRODUCTS ─── */}
+      <section id="products" style={{ padding:"3rem clamp(1rem,5vw,3rem)", background:"#f8fafc" }}>
         <div style={{ maxWidth:1400, margin:"0 auto" }}>
-          <div style={{ textAlign:"center", marginBottom:"2.5rem" }}>
-            <span style={{ display:"inline-block", padding:"5px 18px", borderRadius:50, background:`${c}15`, border:`1px solid ${c}35`, color:c, fontSize:12, fontWeight:700, marginBottom:12 }}>Our Collection</span>
-            <h2 style={{ fontSize:"clamp(1.5rem,4vw,2.5rem)", fontWeight:800, letterSpacing:"-0.03em", marginBottom:10 }}>
+          <div style={{ textAlign:"center", marginBottom:"2rem" }}>
+            <span style={{ display:"inline-block", padding:"4px 16px", borderRadius:99, background:`${c}15`, border:`1px solid ${c}30`, color:c, fontSize:12, fontWeight:700, marginBottom:10 }}>Our Collection</span>
+            <h2 style={{ fontSize:"clamp(1.4rem,4vw,2.25rem)", fontWeight:800, letterSpacing:"-0.03em", marginBottom:8 }}>
               Browse <em style={{ color:c, fontStyle:"italic" }}>All Products</em>
             </h2>
-            <p style={{ color:"#64748b", fontSize:15, lineHeight:1.65, maxWidth:480, margin:"0 auto" }}>
-              {tenant.tagline || "Quality power solutions for homes, shops, and businesses across India."}
+            <p style={{ color:"#64748b", fontSize:14, maxWidth:440, margin:"0 auto", lineHeight:1.6 }}>
+              {tenant.tagline || "Quality power solutions for homes, shops, and businesses."}
             </p>
           </div>
 
           {categories.length > 0 && (
-            <div style={{ display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap", marginBottom:"2.5rem" }}>
+            <div style={{ display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap", marginBottom:"2rem" }}>
               {[{slug:"all",name:"All"}, ...categories].map(cat => (
-                <button key={cat.slug} onClick={() => setActiveCat(cat.slug)} style={{ padding:"9px 22px", borderRadius:50, fontSize:13, fontWeight:500, cursor:"pointer", transition:"all .2s", border:"1.5px solid", borderColor:activeCat===cat.slug?c:"#e2e8f0", background:activeCat===cat.slug?c:"#fff", color:activeCat===cat.slug?"#fff":"#374151", boxShadow:activeCat===cat.slug?`0 4px 12px ${c}40`:"none", fontFamily:"inherit" }}>{cat.name}</button>
+                <button key={cat.slug} onClick={()=>setActiveCat(cat.slug)} style={{ padding:"7px 18px", borderRadius:99, fontSize:13, fontWeight:500, cursor:"pointer", transition:"all .2s", border:"1.5px solid", borderColor:activeCat===cat.slug?c:"#e2e8f0", background:activeCat===cat.slug?c:"#fff", color:activeCat===cat.slug?"#fff":"#374151", boxShadow:activeCat===cat.slug?`0 3px 10px ${c}40`:"none", fontFamily:"inherit" }}>{cat.name}</button>
               ))}
             </div>
           )}
 
           {filtered.length === 0 ? (
-            <div style={{ textAlign:"center", padding:"5rem", color:"#94a3b8" }}>
-              <div style={{ fontSize:52, marginBottom:16 }}>📦</div>
-              <p style={{ fontSize:18, fontWeight:600, color:"#374151", marginBottom:8 }}>No products yet</p>
-              <p style={{ fontSize:14 }}>Products will appear here once added from the admin panel.</p>
+            <div style={{ textAlign:"center", padding:"4rem", color:"#94a3b8" }}>
+              <div style={{ fontSize:48, marginBottom:12 }}>📦</div>
+              <p style={{ fontSize:17, fontWeight:600, color:"#374151", marginBottom:6 }}>No products yet</p>
+              <p style={{ fontSize:13 }}>Products will appear here once added from the admin panel.</p>
             </div>
           ) : (
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,270px),1fr))", gap:18 }}>
-              {filtered.map(p => <ProductCard key={p.id} p={p} c={c} tenant={tenant} onInquiry={() => handleInquiry(p)}/>)}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,240px),1fr))", gap:16 }}>
+              {filtered.map(p => <ProductCard key={p.id} p={p} c={c} tenant={tenant} onInquiry={()=>handleInquiry(p)} onAddToCart={()=>addToCart(p)} isAnimating={cartAnim===p.id}/>)}
             </div>
           )}
         </div>
       </section>
 
-      {/* ════════════════════ WHY CHOOSE US — doc content ════════════════════ */}
-      <section id="why-us" style={{ padding:"4rem clamp(1.25rem,5vw,4rem)", background:"#fff" }}>
+      {/* ─── WHY CHOOSE US ─── */}
+      <section id="why-us" style={{ padding:"3.5rem clamp(1rem,5vw,3rem)", background:"#fff" }}>
         <div style={{ maxWidth:1200, margin:"0 auto" }}>
-          <div style={{ textAlign:"center", marginBottom:"3rem" }}>
-            <div style={{ fontSize:12, fontWeight:700, color:c, letterSpacing:"0.15em", marginBottom:10 }}>WHY CHOOSE US</div>
-            <h2 style={{ fontSize:"clamp(1.5rem,3.5vw,2.25rem)", fontWeight:800, letterSpacing:"-0.03em", lineHeight:1.1 }}>
-              Trusted by Customers Across India
-            </h2>
+          <div style={{ textAlign:"center", marginBottom:"2.5rem" }}>
+            <div style={{ fontSize:11, fontWeight:700, color:c, letterSpacing:"0.15em", marginBottom:8 }}>WHY CHOOSE US</div>
+            <h2 style={{ fontSize:"clamp(1.4rem,3.5vw,2rem)", fontWeight:800, letterSpacing:"-0.03em" }}>Trusted by Customers Across India</h2>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,300px),1fr))", gap:20 }}>
-            {WHY_US.map((item, i) => (
-              <div key={i} style={{ display:"flex", gap:18, padding:"22px", borderRadius:14, border:"1px solid #f1f5f9", background:"#fafcff", transition:"all .2s" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor=c; (e.currentTarget as HTMLDivElement).style.boxShadow=`0 8px 24px ${c}18` }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor="#f1f5f9"; (e.currentTarget as HTMLDivElement).style.boxShadow="none" }}>
-                <div style={{ fontSize:26, flexShrink:0 }}>{item.icon}</div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,280px),1fr))", gap:16 }}>
+            {WHY_US.map((item,i) => (
+              <div key={i} style={{ display:"flex", gap:14, padding:"18px 20px", borderRadius:12, border:"1px solid #f1f5f9", background:"#fafcff", transition:"all .2s" }}
+                onMouseEnter={e=>{(e.currentTarget as HTMLDivElement).style.borderColor=c;(e.currentTarget as HTMLDivElement).style.boxShadow=`0 8px 24px ${c}18`}}
+                onMouseLeave={e=>{(e.currentTarget as HTMLDivElement).style.borderColor="#f1f5f9";(e.currentTarget as HTMLDivElement).style.boxShadow="none"}}>
+                <div style={{ fontSize:24, flexShrink:0 }}>{item.icon}</div>
                 <div>
-                  <div style={{ fontSize:14, fontWeight:700, color:"#0f172a", marginBottom:5 }}>{item.title}</div>
-                  <div style={{ fontSize:13, color:"#64748b", lineHeight:1.65 }}>{item.desc}</div>
+                  <div style={{ fontSize:14, fontWeight:700, color:"#0f172a", marginBottom:4 }}>{item.title}</div>
+                  <div style={{ fontSize:13, color:"#64748b", lineHeight:1.6 }}>{item.desc}</div>
                 </div>
               </div>
             ))}
@@ -498,27 +436,23 @@ export default function ClientPage({ tenant, products, categories }: Props) {
         </div>
       </section>
 
-      {/* ════════════════════ TESTIMONIALS ════════════════════ */}
-      <section style={{ padding:"4rem clamp(1.25rem,5vw,4rem)", background:"#0f172a" }}>
+      {/* ─── TESTIMONIALS ─── */}
+      <section style={{ padding:"3.5rem clamp(1rem,5vw,3rem)", background:"#0f172a" }}>
         <div style={{ maxWidth:1200, margin:"0 auto" }}>
-          <div style={{ textAlign:"center", marginBottom:"3rem" }}>
-            <div style={{ fontSize:12, fontWeight:700, color:c, letterSpacing:"0.15em", marginBottom:10 }}>TESTIMONIALS</div>
-            <h2 style={{ fontSize:"clamp(1.5rem,3.5vw,2.25rem)", fontWeight:800, letterSpacing:"-0.03em", color:"#fff", lineHeight:1.1 }}>
-              What Our Customers Say
-            </h2>
+          <div style={{ textAlign:"center", marginBottom:"2.5rem" }}>
+            <div style={{ fontSize:11, fontWeight:700, color:c, letterSpacing:"0.15em", marginBottom:8 }}>TESTIMONIALS</div>
+            <h2 style={{ fontSize:"clamp(1.4rem,3.5vw,2rem)", fontWeight:800, letterSpacing:"-0.03em", color:"#fff" }}>What Our Customers Say</h2>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,300px),1fr))", gap:16 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,280px),1fr))", gap:16 }}>
             {TESTIMONIALS.map((t,i) => (
-              <div key={i} style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:14, padding:"24px" }}>
-                <div style={{ display:"flex", gap:3, marginBottom:14 }}>
-                  {[...Array(t.stars)].map((_,j) => <span key={j} style={{ color:"#fbbf24", fontSize:15 }}>★</span>)}
-                </div>
-                <p style={{ fontSize:14, color:"rgba(255,255,255,0.7)", lineHeight:1.7, marginBottom:18, fontStyle:"italic" }}>"{t.text}"</p>
-                <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                  <div style={{ width:38, height:38, borderRadius:"50%", background:c, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:700 }}>{t.avatar}</div>
+              <div key={i} style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:12, padding:"22px" }}>
+                <div style={{ display:"flex", gap:2, marginBottom:12 }}>{[...Array(t.stars)].map((_,j)=><span key={j} style={{ color:"#fbbf24",fontSize:14 }}>★</span>)}</div>
+                <p style={{ fontSize:13.5, color:"rgba(255,255,255,0.7)", lineHeight:1.65, marginBottom:16, fontStyle:"italic" }}>"{t.text}"</p>
+                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <div style={{ width:36, height:36, borderRadius:"50%", background:c, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, flexShrink:0 }}>{t.avatar}</div>
                   <div>
-                    <div style={{ fontSize:14, fontWeight:700, color:"#fff" }}>{t.name}</div>
-                    <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)" }}>{t.role}</div>
+                    <div style={{ fontSize:13, fontWeight:700, color:"#fff" }}>{t.name}</div>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>{t.role}</div>
                   </div>
                 </div>
               </div>
@@ -527,135 +461,113 @@ export default function ClientPage({ tenant, products, categories }: Props) {
         </div>
       </section>
 
-      {/* ════════════════════ CTA SECTION ════════════════════ */}
-      <section id="contact" style={{ padding:"4rem clamp(1.25rem,5vw,4rem)", background:`linear-gradient(135deg, ${c}18 0%, ${c}08 100%)`, borderTop:`1px solid ${c}25`, borderBottom:`1px solid ${c}25` }}>
-        <div style={{ maxWidth:800, margin:"0 auto", textAlign:"center" }}>
-          <div style={{ fontSize:12, fontWeight:700, color:c, letterSpacing:"0.15em", marginBottom:12 }}>FREE CONSULTATION</div>
-          <h2 style={{ fontSize:"clamp(1.6rem,4vw,2.5rem)", fontWeight:800, letterSpacing:"-0.03em", marginBottom:14, lineHeight:1.1 }}>
-            Ready to save on your energy bills?
-          </h2>
-          <p style={{ fontSize:15, color:"#475569", lineHeight:1.7, marginBottom:28, maxWidth:500, margin:"0 auto 28px" }}>
-            Get a free site survey and custom quote from our expert team. No obligation, no spam.
-          </p>
-          <div style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
-            <button onClick={() => handleInquiry()} style={{ padding:"14px 32px", background:c, color:"#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700, cursor:"pointer", fontFamily:"inherit", boxShadow:`0 6px 20px ${c}50` }}>
-              Get Free Quote →
-            </button>
-            <a href={`tel:${tenant.phone||"+919876543210"}`} style={{ padding:"14px 28px", background:"#fff", color:"#0f172a", border:"1.5px solid #e2e8f0", borderRadius:10, fontSize:15, fontWeight:600, fontFamily:"inherit", textDecoration:"none", display:"inline-flex", alignItems:"center", gap:8 }}>
-              📞 Call Now
-            </a>
+      {/* ─── CTA SECTION ─── */}
+      <section id="contact" style={{ padding:"3.5rem clamp(1rem,5vw,3rem)", background:`linear-gradient(135deg,${c}18 0%,${c}08 100%)`, borderTop:`1px solid ${c}25`, borderBottom:`1px solid ${c}25` }}>
+        <div style={{ maxWidth:700, margin:"0 auto", textAlign:"center" }}>
+          <div style={{ fontSize:11, fontWeight:700, color:c, letterSpacing:"0.15em", marginBottom:10 }}>FREE CONSULTATION</div>
+          <h2 style={{ fontSize:"clamp(1.4rem,4vw,2.25rem)", fontWeight:800, letterSpacing:"-0.03em", marginBottom:12, lineHeight:1.1 }}>Ready to save on your energy bills?</h2>
+          <p style={{ fontSize:14, color:"#475569", lineHeight:1.7, marginBottom:24, maxWidth:460, margin:"0 auto 24px" }}>Get a free site survey and custom quote. No obligation, no spam.</p>
+          <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
+            <button onClick={()=>handleInquiry()} style={{ padding:"13px 28px", background:c, color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", boxShadow:`0 6px 20px ${c}50` }}>Get Free Quote →</button>
+            <a href={`tel:${tenant.phone||"+919876543210"}`} style={{ padding:"13px 24px", background:"#fff", color:"#0f172a", border:"1.5px solid #e2e8f0", borderRadius:10, fontSize:14, fontWeight:600, fontFamily:"inherit", textDecoration:"none", display:"inline-flex", alignItems:"center", gap:8 }}>📞 Call Now</a>
           </div>
         </div>
       </section>
 
-      {/* ════════════════════ FOOTER ════════════════════ */}
-      <footer style={{ background:"#0a0a0a", color:"#fff", padding:"4rem clamp(1.25rem,5vw,4rem) 2rem" }}>
+      {/* ─── FOOTER ─── */}
+      <footer style={{ background:"#0a0a0a", color:"#fff", padding:"3.5rem clamp(1rem,5vw,3rem) 2rem" }}>
         <div style={{ maxWidth:1400, margin:"0 auto" }}>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,190px),1fr))", gap:"3rem", marginBottom:"3rem" }}>
+          <div className="footer-grid" style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,180px),1fr))", gap:"2.5rem", marginBottom:"2.5rem" }}>
             <div>
-              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
-                <div style={{ width:30, height:30, borderRadius:8, background:c, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#fff"/></svg>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
+                <div style={{ width:28, height:28, borderRadius:7, background:c, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#fff"/></svg>
                 </div>
-                <span style={{ fontSize:16, fontWeight:800, letterSpacing:"-0.3px" }}>
+                <span style={{ fontSize:15, fontWeight:800, letterSpacing:"-0.3px" }}>
                   {tenant.name.split(" ")[0]}<span style={{ color:c }}>{tenant.name.split(" ").length>1?" "+tenant.name.split(" ").slice(1).join(" "):""}</span>
                 </span>
               </div>
-              <p style={{ color:"rgba(255,255,255,0.4)", fontSize:13.5, lineHeight:1.7, maxWidth:260 }}>
-                {tenant.description || "Leading provider of quality power solutions. Trusted by thousands of customers across India."}
+              <p style={{ color:"rgba(255,255,255,0.4)", fontSize:13, lineHeight:1.65, maxWidth:240 }}>
+                {tenant.description||"Genuine power solutions trusted since 2009. Fast delivery, professional installation."}
               </p>
-              <div style={{ display:"flex", gap:10, marginTop:18 }}>
-                {["I","F","L","T"].map(s => (
-                  <div key={s} style={{ width:32, height:32, borderRadius:8, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:12, color:"rgba(255,255,255,0.5)", fontWeight:600 }}>{s}</div>
-                ))}
+              <div style={{ display:"flex", gap:8, marginTop:16 }}>
+                {["I","F","L","T"].map(s => <div key={s} style={{ width:30, height:30, borderRadius:7, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:11, color:"rgba(255,255,255,0.5)", fontWeight:600 }}>{s}</div>)}
               </div>
             </div>
             <div>
-              <p style={{ fontSize:10.5, fontWeight:700, color:"rgba(255,255,255,0.28)", letterSpacing:"0.16em", marginBottom:14 }}>CATEGORIES</p>
+              <p style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.28)", letterSpacing:"0.16em", marginBottom:12 }}>CATEGORIES</p>
               {categories.length>0
-                ? categories.map(cat => <a key={cat.slug} href={`/?category=${cat.slug}&tenant=${tenant.slug}`} style={{ display:"block", color:"rgba(255,255,255,0.5)", fontSize:13.5, textDecoration:"none", marginBottom:10 }} onMouseEnter={e=>(e.currentTarget.style.color="#fff")} onMouseLeave={e=>(e.currentTarget.style.color="rgba(255,255,255,0.5)")}>{cat.name}</a>)
-                : <a href="#products" style={{ display:"block", color:"rgba(255,255,255,0.5)", fontSize:13.5, textDecoration:"none" }}>All Products</a>
+                ? categories.map(cat=><a key={cat.slug} href={`/?category=${cat.slug}&tenant=${tenant.slug}`} style={{ display:"block", color:"rgba(255,255,255,0.5)", fontSize:13, textDecoration:"none", marginBottom:8 }} onMouseEnter={e=>(e.currentTarget.style.color="#fff")} onMouseLeave={e=>(e.currentTarget.style.color="rgba(255,255,255,0.5)")}>{cat.name}</a>)
+                : <a href="#products" style={{ display:"block", color:"rgba(255,255,255,0.5)", fontSize:13, textDecoration:"none" }}>All Products</a>
               }
             </div>
             <div>
-              <p style={{ fontSize:10.5, fontWeight:700, color:"rgba(255,255,255,0.28)", letterSpacing:"0.16em", marginBottom:14 }}>QUICK LINKS</p>
-              {["All Products","Featured","New Arrivals","Best Sellers","About Us","Contact"].map(l => (
-                <a key={l} href={`/?tenant=${tenant.slug}`} style={{ display:"block", color:"rgba(255,255,255,0.5)", fontSize:13.5, textDecoration:"none", marginBottom:10 }} onMouseEnter={e=>(e.currentTarget.style.color="#fff")} onMouseLeave={e=>(e.currentTarget.style.color="rgba(255,255,255,0.5)")}>{l}</a>
+              <p style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.28)", letterSpacing:"0.16em", marginBottom:12 }}>QUICK LINKS</p>
+              {["All Products","Why Choose Us","New Arrivals","About Us","Contact"].map(l=>(
+                <a key={l} href="#" style={{ display:"block", color:"rgba(255,255,255,0.5)", fontSize:13, textDecoration:"none", marginBottom:8 }} onMouseEnter={e=>(e.currentTarget.style.color="#fff")} onMouseLeave={e=>(e.currentTarget.style.color="rgba(255,255,255,0.5)")}>{l}</a>
               ))}
             </div>
             <div>
-              <p style={{ fontSize:10.5, fontWeight:700, color:"rgba(255,255,255,0.28)", letterSpacing:"0.16em", marginBottom:14 }}>CONTACT</p>
+              <p style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.28)", letterSpacing:"0.16em", marginBottom:12 }}>CONTACT</p>
               {[
-                { icon:"📞", label:"Phone", val: tenant.phone||"+91 98765 43210" },
-                { icon:"✉️", label:"Email", val: tenant.email||`info@${tenant.slug}.com` },
-                { icon:"📍", label:"Address", val: tenant.address||"42, Industrial Area Phase II, Hyderabad, Telangana 500032" },
-                { icon:"🌐", label:"Website", val: tenant.website||`https://${tenant.slug}.com` },
-              ].map(({ icon, label, val }) => (
-                <div key={label} style={{ display:"flex", gap:10, marginBottom:13, alignItems:"flex-start" }}>
-                  <span style={{ fontSize:14, flexShrink:0, marginTop:1 }}>{icon}</span>
+                {icon:"📞",label:"Phone",val:tenant.phone||"+91 98765 43210"},
+                {icon:"✉️",label:"Email",val:tenant.email||`info@${tenant.slug}.com`},
+                {icon:"📍",label:"Address",val:tenant.address||"Hyderabad, Telangana 500032"},
+              ].map(({icon,label,val})=>(
+                <div key={label} style={{ display:"flex", gap:8, marginBottom:12, alignItems:"flex-start" }}>
+                  <span style={{ fontSize:13, flexShrink:0, marginTop:1 }}>{icon}</span>
                   <div>
-                    <div style={{ fontSize:10, color:"rgba(255,255,255,0.25)", fontWeight:600, letterSpacing:"0.1em", marginBottom:2 }}>{label.toUpperCase()}</div>
-                    <div style={{ color:"rgba(255,255,255,0.55)", fontSize:13, lineHeight:1.5 }}>{val}</div>
+                    <div style={{ fontSize:9, color:"rgba(255,255,255,0.25)", fontWeight:600, letterSpacing:"0.1em", marginBottom:2 }}>{label.toUpperCase()}</div>
+                    <div style={{ color:"rgba(255,255,255,0.52)", fontSize:12, lineHeight:1.5 }}>{val}</div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          <div style={{ borderTop:"1px solid rgba(255,255,255,0.06)", paddingTop:"2rem", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:12 }}>
+          <div style={{ borderTop:"1px solid rgba(255,255,255,0.06)", paddingTop:"1.5rem", display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:10 }}>
             <p style={{ color:"rgba(255,255,255,0.2)", fontSize:12 }}>© {new Date().getFullYear()} {tenant.name}. All rights reserved.</p>
-            <div style={{ display:"flex", gap:20 }}>
-              {["Privacy Policy","Terms of Use","Refund Policy"].map(l => (
-                <a key={l} href="#" style={{ color:"rgba(255,255,255,0.2)", fontSize:12, textDecoration:"none" }}>{l}</a>
-              ))}
+            <div style={{ display:"flex", gap:16 }}>
+              {["Privacy","Terms","Refund"].map(l=><a key={l} href="#" style={{ color:"rgba(255,255,255,0.2)", fontSize:12, textDecoration:"none" }}>{l}</a>)}
             </div>
           </div>
         </div>
       </footer>
 
-      {/* ════════════════════ INQUIRY MODAL ════════════════════ */}
+      {/* ─── INQUIRY MODAL ─── */}
       {inquiryOpen && (
-        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:300, display:"flex", alignItems:"flex-end", justifyContent:"center", backdropFilter:"blur(4px)" }}
-          onClick={e => e.target===e.currentTarget && setInquiryOpen(false)}>
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:400, display:"flex", alignItems:"flex-end", justifyContent:"center", backdropFilter:"blur(4px)" }}
+          onClick={e=>e.target===e.currentTarget&&setInquiryOpen(false)}>
           <div style={{ background:"#fff", borderRadius:"20px 20px 0 0", width:"100%", maxWidth:520, maxHeight:"92vh", overflowY:"auto", boxShadow:"0 -8px 40px rgba(0,0,0,0.2)", animation:"modalIn .25s ease" }}>
-            <div style={{ padding:"22px 26px 16px", borderBottom:"1px solid #f1f5f9", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+            <div style={{ padding:"20px 24px 16px", borderBottom:"1px solid #f1f5f9", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
               <div>
-                <div style={{ fontSize:18, fontWeight:800, color:"#0f172a" }}>Send Enquiry</div>
-                <div style={{ fontSize:13, color:"#94a3b8", marginTop:3 }}>{inquiryProduct ? `Re: ${inquiryProduct.name}` : `To: ${tenant.name}`}</div>
+                <div style={{ fontSize:17, fontWeight:800, color:"#0f172a" }}>Send Enquiry</div>
+                <div style={{ fontSize:13, color:"#94a3b8", marginTop:3 }}>{inquiryProduct?`Re: ${inquiryProduct.name}`:`To: ${tenant.name}`}</div>
               </div>
-              <button onClick={() => setInquiryOpen(false)} style={{ background:"none", border:"none", cursor:"pointer", fontSize:22, color:"#94a3b8", lineHeight:1 }}>×</button>
+              <button onClick={()=>setInquiryOpen(false)} style={{ background:"none", border:"none", cursor:"pointer", fontSize:22, color:"#94a3b8" }}>×</button>
             </div>
             {!formSent ? (
-              <div style={{ padding:"20px 26px 28px" }}>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:12 }}>
-                  {[
-                    { key:"name",     label:"Full Name *",      type:"text",  placeholder:"Your full name" },
-                    { key:"phone",    label:"Phone Number *",   type:"tel",   placeholder:"+91 98765 43210" },
-                    { key:"email",    label:"Email Address",    type:"email", placeholder:"you@company.com" },
-                    { key:"quantity", label:"Quantity / Units", type:"text",  placeholder:"e.g. 10 units" },
-                  ].map(f => (
+              <div style={{ padding:"18px 24px 28px" }}>
+                <div className="inquiry-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:12 }}>
+                  {[{key:"name",label:"Full Name *",type:"text",placeholder:"Your full name"},{key:"phone",label:"Phone *",type:"tel",placeholder:"+91 98765 43210"},{key:"email",label:"Email",type:"email",placeholder:"you@email.com"},{key:"quantity",label:"Quantity",type:"text",placeholder:"e.g. 2 units"}].map(f=>(
                     <div key={f.key}>
                       <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#374151", marginBottom:5 }}>{f.label}</label>
-                      <input type={f.type} placeholder={f.placeholder} value={(formData as Record<string,string>)[f.key]}
-                        onChange={e => setFormData(p => ({ ...p, [f.key]: e.target.value }))}
-                        style={{ width:"100%", padding:"10px 13px", borderRadius:10, border:"1.5px solid #e5e7eb", fontSize:14, color:"#111827", background:"#fff", outline:"none", fontFamily:"inherit", boxSizing:"border-box" as const }}/>
+                      <input type={f.type} placeholder={f.placeholder} value={(formData as Record<string,string>)[f.key]} onChange={e=>setFormData(p=>({...p,[f.key]:e.target.value}))} style={iStyle}/>
                     </div>
                   ))}
                 </div>
-                <div style={{ marginBottom:18 }}>
+                <div style={{ marginBottom:16 }}>
                   <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#374151", marginBottom:5 }}>Message</label>
-                  <textarea rows={3} value={formData.message} onChange={e => setFormData(p => ({ ...p, message: e.target.value }))}
-                    placeholder="Describe your requirements, preferred specifications, etc."
-                    style={{ width:"100%", padding:"10px 13px", borderRadius:10, border:"1.5px solid #e5e7eb", fontSize:14, color:"#111827", background:"#fff", outline:"none", resize:"vertical", fontFamily:"inherit", boxSizing:"border-box" as const }}/>
+                  <textarea rows={3} value={formData.message} onChange={e=>setFormData(p=>({...p,message:e.target.value}))} placeholder="Describe your requirements..." style={{ ...iStyle, resize:"vertical" as const }}/>
                 </div>
-                <button onClick={submitInquiry} disabled={sending} style={{ width:"100%", padding:"14px", borderRadius:12, background:sending?"#94a3b8":c, color:"#fff", fontSize:15, fontWeight:700, border:"none", cursor:sending?"not-allowed":"pointer", fontFamily:"inherit", boxShadow:`0 6px 20px ${c}50` }}>
-                  {sending ? "Sending..." : "Submit Enquiry →"}
+                <button onClick={submitInquiry} disabled={sending} style={{ width:"100%", padding:"13px", borderRadius:12, background:sending?"#94a3b8":c, color:"#fff", fontSize:15, fontWeight:700, border:"none", cursor:sending?"not-allowed":"pointer", fontFamily:"inherit" }}>
+                  {sending?"Sending...":"Submit Enquiry →"}
                 </button>
-                <p style={{ textAlign:"center", fontSize:12, color:"#94a3b8", marginTop:10 }}>We'll respond within 24 hours. No spam, ever.</p>
+                <p style={{ textAlign:"center", fontSize:12, color:"#94a3b8", marginTop:8 }}>We'll respond within 24 hours.</p>
               </div>
             ) : (
-              <div style={{ padding:"52px 26px", textAlign:"center" }}>
-                <div style={{ fontSize:52, marginBottom:14 }}>✅</div>
-                <div style={{ fontSize:20, fontWeight:800, color:"#16a34a", marginBottom:8 }}>Enquiry Sent!</div>
+              <div style={{ padding:"48px 24px", textAlign:"center" }}>
+                <div style={{ fontSize:50, marginBottom:12 }}>✅</div>
+                <div style={{ fontSize:20, fontWeight:800, color:"#16a34a", marginBottom:6 }}>Enquiry Sent!</div>
                 <div style={{ color:"#64748b", fontSize:14 }}>Our team will contact you within 24 hours.</div>
               </div>
             )}
@@ -663,81 +575,148 @@ export default function ClientPage({ tenant, products, categories }: Props) {
         </div>
       )}
 
-      {/* ════════════════════ FLOATING WHATSAPP ════════════════════ */}
-      <a href={`https://wa.me/91${(tenant.phone||"9876543210").replace(/\D/g,"")}`} target="_blank" rel="noopener noreferrer"
-        style={{ position:"fixed", bottom:28, right:28, zIndex:99, width:54, height:54, borderRadius:"50%", background:"#25d366", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 6px 24px rgba(37,211,102,0.5)", textDecoration:"none", transition:"transform .2s" }}
-        onMouseEnter={e=>(e.currentTarget.style.transform="scale(1.1)")} onMouseLeave={e=>(e.currentTarget.style.transform="")}>
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
-          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-        </svg>
-      </a>
+      {/* ─── CART DRAWER ─── */}
+      {cartOpen && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", zIndex:400, display:"flex", justifyContent:"flex-end", backdropFilter:"blur(4px)" }}
+          onClick={e=>e.target===e.currentTarget&&setCartOpen(false)}>
+          <div style={{ background:"#fff", width:"100%", maxWidth:420, height:"100%", overflowY:"auto", animation:"slideLeft .3s ease", display:"flex", flexDirection:"column" }}>
+            {/* Header */}
+            <div style={{ padding:"20px 24px", borderBottom:"1px solid #f1f5f9", display:"flex", justifyContent:"space-between", alignItems:"center", position:"sticky", top:0, background:"#fff", zIndex:10 }}>
+              <div>
+                <div style={{ fontSize:18, fontWeight:800, color:"#0f172a" }}>Your Cart</div>
+                <div style={{ fontSize:13, color:"#94a3b8" }}>{cartCount} item{cartCount!==1?"s":""}</div>
+              </div>
+              <button onClick={()=>setCartOpen(false)} style={{ background:"none", border:"none", cursor:"pointer", fontSize:24, color:"#94a3b8" }}>×</button>
+            </div>
 
-      {/* ════════════════════ CSS ════════════════════ */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        * { box-sizing: border-box; }
-        @keyframes floatP { 0%,100%{transform:translateY(0) scale(1);opacity:.18} 50%{transform:translateY(-22px) scale(1.5);opacity:.55} }
-        @keyframes pulseOrb { 0%,100%{transform:scale(1);opacity:.65} 50%{transform:scale(1.07);opacity:1} }
-        @keyframes scrollWheel { 0%,100%{transform:translateY(0);opacity:1} 50%{transform:translateY(8px);opacity:.2} }
-        @keyframes pingDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.5)} }
-        @keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-33.333%)} }
-        @keyframes modalIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        html { scroll-behavior: smooth; }
-      `}</style>
+            {/* Items */}
+            <div style={{ flex:1, padding:"1rem 24px", overflowY:"auto" }}>
+              {cart.length === 0 ? (
+                <div style={{ textAlign:"center", padding:"4rem 1rem" }}>
+                  <div style={{ fontSize:56, marginBottom:16 }}>🛒</div>
+                  <p style={{ fontSize:17, fontWeight:600, color:"#374151", marginBottom:6 }}>Your cart is empty</p>
+                  <p style={{ fontSize:13, color:"#94a3b8", marginBottom:20 }}>Browse products and add them to your cart</p>
+                  <button onClick={()=>setCartOpen(false)} style={{ padding:"10px 24px", background:c, color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Browse Products</button>
+                </div>
+              ) : (
+                cart.map(item => (
+                  <div key={item.id} style={{ display:"flex", gap:14, padding:"14px 0", borderBottom:"1px solid #f8fafc", alignItems:"flex-start" }}>
+                    {/* Image */}
+                    <div style={{ width:72, height:72, borderRadius:10, overflow:"hidden", background:item.images[0]?`url(${item.images[0]}) center/cover`:"linear-gradient(135deg,#0f172a,#1e293b)", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      {!item.images[0] && <span style={{ fontSize:10, color:"rgba(255,255,255,0.5)", fontWeight:600, textAlign:"center", padding:4 }}>{item.name.split(" ")[0]}</span>}
+                    </div>
+                    {/* Info */}
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <p style={{ fontSize:13, fontWeight:600, color:"#0f172a", marginBottom:4, lineHeight:1.3 }}>{item.name}</p>
+                      {item.category && <p style={{ fontSize:11, color:"#94a3b8", marginBottom:8 }}>{item.category.name}</p>}
+                      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                        {/* Qty controls */}
+                        <div style={{ display:"flex", alignItems:"center", gap:0, border:"1px solid #e2e8f0", borderRadius:8, overflow:"hidden" }}>
+                          <button onClick={()=>updateQty(item.id,item.qty-1)} style={{ width:30, height:30, border:"none", background:"#f8fafc", cursor:"pointer", fontSize:16, color:"#374151", fontFamily:"inherit" }}>−</button>
+                          <span style={{ width:36, textAlign:"center", fontSize:13, fontWeight:600, color:"#0f172a" }}>{item.qty}</span>
+                          <button onClick={()=>updateQty(item.id,item.qty+1)} style={{ width:30, height:30, border:"none", background:"#f8fafc", cursor:"pointer", fontSize:16, color:"#374151", fontFamily:"inherit" }}>+</button>
+                        </div>
+                        <div style={{ textAlign:"right" }}>
+                          {item.price
+                            ? <span style={{ fontSize:15, fontWeight:800, color:c }}>₹{(item.price*item.qty).toLocaleString("en-IN")}</span>
+                            : <span style={{ fontSize:12, color:"#94a3b8" }}>Contact for price</span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                    {/* Remove */}
+                    <button onClick={()=>removeFromCart(item.id)} style={{ background:"none", border:"none", cursor:"pointer", color:"#ef4444", fontSize:18, padding:"2px 4px", flexShrink:0, lineHeight:1 }}>×</button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Footer */}
+            {cart.length > 0 && (
+              <div style={{ padding:"1.25rem 24px", borderTop:"1px solid #f1f5f9", background:"#fff" }}>
+                {cartTotal > 0 && (
+                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
+                    <span style={{ fontSize:15, fontWeight:600, color:"#374151" }}>Estimated Total</span>
+                    <span style={{ fontSize:18, fontWeight:800, color:c }}>₹{cartTotal.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+                <button onClick={()=>{ setCartOpen(false); handleInquiry(null) }} style={{ width:"100%", padding:"14px", background:c, color:"#fff", border:"none", borderRadius:12, fontSize:15, fontWeight:700, cursor:"pointer", fontFamily:"inherit", marginBottom:10, boxShadow:`0 4px 14px ${c}45` }}>
+                  Request Quote for Cart →
+                </button>
+                <button onClick={()=>setCart([])} style={{ width:"100%", padding:"10px", background:"#fef2f2", color:"#dc2626", border:"1px solid #fecaca", borderRadius:10, fontSize:13, fontWeight:500, cursor:"pointer", fontFamily:"inherit" }}>
+                  Clear Cart
+                </button>
+                <p style={{ textAlign:"center", fontSize:11, color:"#94a3b8", marginTop:10 }}>
+                  We'll contact you with best prices for all items
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ─── WHATSAPP ─── */}
+      <a href={`https://wa.me/91${(tenant.phone||"9876543210").replace(/\D/g,"")}`} target="_blank" rel="noopener noreferrer"
+        style={{ position:"fixed", bottom:24, right:22, zIndex:99, width:50, height:50, borderRadius:"50%", background:"#25d366", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 4px 18px rgba(37,211,102,0.5)", textDecoration:"none", transition:"transform .2s" }}
+        onMouseEnter={e=>(e.currentTarget.style.transform="scale(1.1)")} onMouseLeave={e=>(e.currentTarget.style.transform="scale(1)")}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      </a>
     </div>
   )
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   PRODUCT CARD
-───────────────────────────────────────────────────────────────────────────── */
-function ProductCard({ p, c, tenant, onInquiry }: { p: Product; c: string; tenant: Tenant; onInquiry: () => void }) {
+/* ─── PRODUCT CARD ─── */
+function ProductCard({ p, c, tenant, onInquiry, onAddToCart, isAnimating }: { p: Product; c: string; tenant: Tenant; onInquiry: () => void; onAddToCart: () => void; isAnimating: boolean }) {
   const [hov, setHov] = useState(false)
   const hasImg = p.images && p.images.length > 0 && p.images[0]
-  const discountPct = p.discount ?? (p.mrp && p.price ? Math.round(((p.mrp - p.price) / p.mrp) * 100) : null)
+  const discountPct = p.discount ?? (p.mrp && p.price ? Math.round(((p.mrp-p.price)/p.mrp)*100) : null)
 
   return (
-    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ background:"#fff", borderRadius:18, overflow:"hidden", border:`1px solid ${hov?c+"50":"rgba(0,0,0,0.07)"}`, boxShadow:hov?`0 20px 48px rgba(0,0,0,0.12),0 0 0 1px ${c}30`:"0 2px 8px rgba(0,0,0,0.04)", transform:hov?"translateY(-6px)":"none", transition:"all 0.3s cubic-bezier(0.25,0.46,0.45,0.94)", cursor:"pointer" }}>
-
-      <div style={{ height:215, position:"relative", overflow:"hidden", background:hasImg?"transparent":"linear-gradient(135deg,#0f172a,#1e293b)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+    <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      style={{ background:"#fff", borderRadius:16, overflow:"hidden", border:`1px solid ${hov?c+"50":"rgba(0,0,0,0.07)"}`, boxShadow:hov?`0 16px 40px rgba(0,0,0,0.11),0 0 0 1px ${c}25`:"0 2px 8px rgba(0,0,0,0.04)", transform:hov?"translateY(-4px)":"none", transition:"all 0.3s cubic-bezier(0.25,0.46,0.45,0.94)", cursor:"pointer", display:"flex", flexDirection:"column" }}>
+      
+      {/* Image */}
+      <div style={{ height:200, position:"relative", overflow:"hidden", background:hasImg?"#f8fafc":"linear-gradient(135deg,#0f172a,#1e293b)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
         {hasImg
           ? <img src={p.images[0]} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover", transform:hov?"scale(1.05)":"scale(1)", transition:"transform .5s ease" }}/>
-          : <span style={{ fontSize:"clamp(1rem,4vw,1.6rem)", fontWeight:700, color:"rgba(255,255,255,0.6)", textAlign:"center", padding:"1rem", lineHeight:1.3 }}>{p.name.split(" ").slice(0,3).join(" ")}</span>
+          : <span style={{ fontSize:"clamp(0.9rem,4vw,1.4rem)", fontWeight:700, color:"rgba(255,255,255,0.6)", textAlign:"center", padding:"1rem", lineHeight:1.3 }}>{p.name.split(" ").slice(0,3).join(" ")}</span>
         }
-        {p.category && (
-          <div style={{ position:"absolute", top:12, right:12, padding:"4px 11px", background:"rgba(255,255,255,0.93)", backdropFilter:"blur(4px)", borderRadius:50, fontSize:11, fontWeight:600, color:"#374151" }}>{p.category.name}</div>
-        )}
-        {discountPct && discountPct > 0 && (
-          <div style={{ position:"absolute", top:12, left:12, padding:"4px 10px", background:"#ef4444", borderRadius:50, fontSize:11, fontWeight:700, color:"#fff" }}>{discountPct}% OFF</div>
-        )}
-        <div style={{ position:"absolute", bottom:12, left:16, display:"flex", gap:4 }}>
-          <div style={{ width:22, height:3, borderRadius:2, background:c }}/>
-          <div style={{ width:8, height:3, borderRadius:2, background:"rgba(255,255,255,0.35)" }}/>
-          <div style={{ width:8, height:3, borderRadius:2, background:"rgba(255,255,255,0.35)" }}/>
+        {p.category && <div style={{ position:"absolute", top:10, right:10, padding:"4px 10px", background:"rgba(255,255,255,0.93)", backdropFilter:"blur(4px)", borderRadius:99, fontSize:10, fontWeight:600, color:"#374151" }}>{p.category.name}</div>}
+        {discountPct && discountPct>0 && <div style={{ position:"absolute", top:10, left:10, padding:"4px 9px", background:"#ef4444", borderRadius:99, fontSize:10, fontWeight:700, color:"#fff" }}>{discountPct}% OFF</div>}
+        <div style={{ position:"absolute", bottom:10, left:14, display:"flex", gap:4 }}>
+          <div style={{ width:20, height:3, borderRadius:2, background:c }}/>
+          <div style={{ width:7, height:3, borderRadius:2, background:"rgba(255,255,255,0.3)" }}/>
+          <div style={{ width:7, height:3, borderRadius:2, background:"rgba(255,255,255,0.3)" }}/>
         </div>
-        <div style={{ position:"absolute", inset:0, background:`${c}22`, opacity:hov?1:0, transition:"opacity .25s", display:"flex", alignItems:"center", justifyContent:"center" }}>
-          <button onClick={e => { e.preventDefault(); onInquiry() }}
-            style={{ padding:"10px 22px", background:c, color:"#fff", border:"none", borderRadius:8, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit", transform:hov?"translateY(0)":"translateY(10px)", transition:"transform .25s", boxShadow:`0 6px 20px ${c}60` }}>
-            Quick Enquiry
-          </button>
-        </div>
+        {/* Hover overlay */}
+        {hov && (
+          <div style={{ position:"absolute", inset:0, background:`${c}22`, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+            <button onClick={e=>{e.preventDefault();onInquiry()}} style={{ padding:"8px 14px", background:"#fff", color:c, border:`1.5px solid ${c}`, borderRadius:8, fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Enquire</button>
+            <button onClick={e=>{e.preventDefault();onAddToCart()}} style={{ padding:"8px 14px", background:c, color:"#fff", border:"none", borderRadius:8, fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit", animation:isAnimating?"cartPop 0.7s ease":"none" }}>+ Cart</button>
+          </div>
+        )}
       </div>
 
-      <div style={{ padding:"18px 20px 20px" }}>
-        <h3 style={{ fontSize:15, fontWeight:700, color:"#0f172a", marginBottom:7, lineHeight:1.3 }}>{p.name}</h3>
-        <p style={{ fontSize:13, color:"#64748b", lineHeight:1.6, marginBottom:16 }}>
-          {p.description?.slice(0,82)}{(p.description?.length||0)>82?"…":""}
+      {/* Info */}
+      <div style={{ padding:"14px 16px 16px", flex:1, display:"flex", flexDirection:"column" }}>
+        <h3 style={{ fontSize:14, fontWeight:700, color:"#0f172a", marginBottom:5, lineHeight:1.3, flex:1 }}>{p.name}</h3>
+        <p style={{ fontSize:12.5, color:"#64748b", lineHeight:1.55, marginBottom:12 }}>
+          {p.description?.slice(0,72)}{(p.description?.length||0)>72?"…":""}
         </p>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
           <div>
             {p.price
-              ? <><span style={{ fontSize:19, fontWeight:800, color:c }}>₹{p.price.toLocaleString("en-IN")}</span>
-                  {p.mrp && p.mrp>p.price && <span style={{ fontSize:13, color:"#94a3b8", textDecoration:"line-through", marginLeft:8 }}>₹{p.mrp.toLocaleString("en-IN")}</span>}</>
-              : <span style={{ fontSize:13, color:"#94a3b8", fontStyle:"italic" }}>Contact for price</span>
+              ? <><span style={{ fontSize:17, fontWeight:800, color:c }}>₹{p.price.toLocaleString("en-IN")}</span>
+                  {p.mrp&&p.mrp>p.price&&<span style={{ fontSize:12, color:"#94a3b8", textDecoration:"line-through", marginLeft:6 }}>₹{p.mrp.toLocaleString("en-IN")}</span>}</>
+              : <span style={{ fontSize:12.5, color:"#94a3b8", fontStyle:"italic" }}>Contact for price</span>
             }
           </div>
-          <Link href={`/products/${p.slug}?tenant=${tenant.slug}`} style={{ width:36, height:36, borderRadius:"50%", background:hov?c:"transparent", border:`1.5px solid ${hov?c:"rgba(0,0,0,0.15)"}`, display:"flex", alignItems:"center", justifyContent:"center", color:hov?"#fff":"#374151", fontSize:16, textDecoration:"none", transition:"all .22s" }}>→</Link>
+          <div style={{ display:"flex", gap:6 }}>
+            <button onClick={e=>{e.preventDefault();onAddToCart()}} title="Add to cart" style={{ width:32, height:32, borderRadius:"50%", background:isAnimating?c:`${c}15`, border:`1.5px solid ${c}`, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", transition:"all 0.2s", animation:isAnimating?"cartPop 0.7s ease":"none" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={isAnimating?"#fff":c} strokeWidth="2.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            </button>
+            <Link href={`/products/${p.slug}?tenant=${tenant.slug}`} style={{ width:32, height:32, borderRadius:"50%", background:hov?c:"transparent", border:`1.5px solid ${hov?c:"rgba(0,0,0,0.15)"}`, display:"flex", alignItems:"center", justifyContent:"center", color:hov?"#fff":"#374151", fontSize:15, textDecoration:"none", transition:"all .22s" }}>→</Link>
+          </div>
         </div>
       </div>
     </div>
