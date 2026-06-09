@@ -1,724 +1,1368 @@
-"use client"
-import { useState, useEffect, useRef } from "react"
-import Link from "next/link"
+"use client";
 
+import { useState, useEffect, useRef, useCallback } from "react";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 interface Product {
-  id: string; name: string; slug: string; description: string
-  price: number | null; mrp?: number | null; discount?: number | null
-  isHero?: boolean; images: string[]; isVisible: boolean
-  category: { name: string; slug: string } | null
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  price?: number;
+  images?: string[];
+  specifications?: Record<string, string>;
+  features?: string[];
+  category?: { name: string };
 }
-interface Category { id: string; name: string; slug: string }
+
 interface Tenant {
-  id: string; name: string; slug: string; primaryColor: string
-  logo: string | null; tagline?: string; description?: string
-  phone?: string; email?: string; address?: string; website?: string
+  id: string;
+  name: string;
+  slug: string;
+  primaryColor?: string;
+  logo?: string;
 }
-interface CartItem extends Product { qty: number }
-interface Props { tenant: Tenant; products: Product[]; categories: Category[] }
 
+interface CartItem extends Product {
+  qty: number;
+}
+
+interface ClientPageProps {
+  tenant: Tenant;
+  products: Product[];
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 const HERO_SLIDES = [
-  { eyebrow:"INDIA'S TRUSTED POWER BRAND", headline:["Uninterrupted","Power.","Always."], accent:"Power.", desc:"Industrial-grade inverters & UPS systems trusted by 50,000+ customers. Zero downtime, zero compromise.", label:"INVERTERS & UPS", cta:"Explore Inverters", ctaSub:"Starting ₹4,999", stats:[{val:"50K+",label:"Customers"},{val:"15+",label:"Years"},{val:"500+",label:"Dealers"}], image:"https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1600&auto=format&fit=crop&q=80", overlay:"rgba(10,8,28,0.72)", badge:"🔋 New: 5kVA Lithium UPS Now Available" },
-  { eyebrow:"CLEAN ENERGY FOR EVERY ROOFTOP", headline:["Solar Energy,","Simplified","for You."], accent:"Simplified", desc:"High-efficiency monocrystalline solar panels with 25-year performance warranty. Cut your electricity bill by up to 90%.", label:"SOLAR PANELS", cta:"Get Solar Quote", ctaSub:"Free site survey", stats:[{val:"540W",label:"Max Wattage"},{val:"25yr",label:"Warranty"},{val:"21.5%",label:"Efficiency"}], image:"https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1600&auto=format&fit=crop&q=80", overlay:"rgba(4,20,8,0.68)", badge:"☀️ Subsidy: PM Surya Ghar Yojana — Apply Now" },
-  { eyebrow:"STORE MORE. WASTE LESS.", headline:["Next-Gen","Battery","Storage."], accent:"Battery", desc:"Lithium & tall-tubular batteries with smart BMS, 6000+ cycle life, and 7-year warranty. Never lose power again.", label:"BATTERY STORAGE", cta:"Compare Batteries", ctaSub:"Expert guidance free", stats:[{val:"6000+",label:"Cycle Life"},{val:"7yr",label:"Warranty"},{val:"150Ah",label:"Max Capacity"}], image:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&auto=format&fit=crop&q=80", overlay:"rgba(14,4,28,0.70)", badge:"⚡ New: LiFePO4 Lithium Series Launched" },
-  { eyebrow:"BUILT FOR INDIAN HOMES", headline:["5-Star ACs &","Smart Home","Appliances."], accent:"Smart Home", desc:"Premium inverter ACs, BLDC fans, and smart appliances engineered for Indian summers. Highest energy savings guaranteed.", label:"HOME APPLIANCES", cta:"Browse Appliances", ctaSub:"EMI from ₹999/mo", stats:[{val:"5★",label:"Energy Rating"},{val:"28W",label:"BLDC Fan"},{val:"R32",label:"Eco Coolant"}], image:"https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=1600&auto=format&fit=crop&q=80", overlay:"rgba(4,8,24,0.70)", badge:"🏠 New: Smart Home Range Now Available" },
-]
+  {
+    bg: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1600&q=80",
+    eyebrow: "Authorized Microtek Partner",
+    headline: "Power Your Future with Clean Solar Energy",
+    sub: "Save up to 80% on electricity bills. 30-year warranty. Easy EMI options. Join 1000+ satisfied customers across India.",
+    cta1: "Explore Products",
+    cta2: "Get Free Consultation",
+  },
+  {
+    bg: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=1600&q=80",
+    eyebrow: "Reliable Power Backup",
+    headline: "Never Face a Powercut Again",
+    sub: "From home inverters to industrial UPS systems — we deliver uninterrupted power for every need, every load, every hour.",
+    cta1: "View Inverters",
+    cta2: "Calculate Your Load",
+  },
+  {
+    bg: "https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=1600&q=80",
+    eyebrow: "Premium Tubular Batteries",
+    headline: "Long-Lasting Backup You Can Count On",
+    sub: "Microtek tubular batteries with 36–60 month warranty. Compatible with all inverter brands. Pan-India delivery available.",
+    cta1: "Shop Batteries",
+    cta2: "Talk to Expert",
+  },
+  {
+    bg: "https://images.unsplash.com/photo-1497440001374-f26997328c1b?w=1600&q=80",
+    eyebrow: "15+ Years of Excellence",
+    headline: "Trusted by 1000+ Homes & Businesses",
+    sub: "From Hyderabad to pan-India — Satyajan Energy Solutions is your one-stop shop for inverters, batteries, solar & UPS.",
+    cta1: "Our Products",
+    cta2: "Read Reviews",
+  },
+];
 
-const WHY_US = [
-  { icon:"✅", title:"Genuine & Certified Products", desc:"We provide original UPS, inverters, batteries, and solar solutions from trusted brands." },
-  { icon:"⚡", title:"Fast Delivery & Installation", desc:"Quick dispatch and professional installation support for homes and businesses." },
-  { icon:"🛡️", title:"Reliable Warranty Support", desc:"Easy paperless warranty assistance with responsive after-sales service." },
-  { icon:"🏆", title:"15+ Years of Experience", desc:"Trusted since 2009 by thousands of customers across India." },
-  { icon:"💰", title:"Best Value Pricing", desc:"Competitive prices with quality products and special dealer offers." },
-  { icon:"📞", title:"Dedicated Customer Support", desc:"Friendly support team ready to assist before and after your purchase." },
-]
+const MARQUEE_ITEMS = [
+  "Solar Panel Installation",
+  "Battery Replacement",
+  "Inverter Setup & Repair",
+  "Free Consultation",
+  "24/7 Support",
+  "Easy EMI Options",
+  "Pan-India Delivery",
+  "Free Installation",
+  "Microtek Authorized Partner",
+  "Lithium Battery Upgrade",
+  "Online UPS Solutions",
+  "Warranty Claim Support",
+];
 
-const TESTIMONIALS = [
-  { name:"Rajesh Kumar", role:"Factory Owner, Pune", text:"Installed 4 Microtek inverters across our plant. Zero downtime in 2 years. Professional and excellent after-sales support.", stars:5, avatar:"R" },
-  { name:"Priya Nair", role:"Homeowner, Hyderabad", text:"Cut my electricity bill from ₹4,200 to ₹480/month with their 6kW solar setup. ROI in under 3 years!", stars:5, avatar:"P" },
-  { name:"Amit Sharma", role:"IT Manager, Bengaluru", text:"Using their UPS for our server room for 5 years. Flawless performance even during extended power cuts.", stars:5, avatar:"A" },
-]
+const WHY_CARDS = [
+  {
+    icon: "🛡️",
+    title: "Authorized Channel Partner",
+    desc: "Official partner ensuring genuine products with full manufacturer warranty and support.",
+    color: "#10b981",
+  },
+  {
+    icon: "🏆",
+    title: "15+ Years of Excellence",
+    desc: "Proven track record of delivering reliable power solutions across India with an expert technical team.",
+    color: "#3b82f6",
+  },
+  {
+    icon: "🎧",
+    title: "24/7 Customer Support",
+    desc: "Dedicated support team available round the clock for installation, maintenance, and troubleshooting.",
+    color: "#f59e0b",
+  },
+  {
+    icon: "💰",
+    title: "Best Price Guarantee",
+    desc: "Competitive pricing with flexible payment options and special discounts for bulk orders.",
+    color: "#8b5cf6",
+  },
+  {
+    icon: "🚚",
+    title: "Pan-India Delivery",
+    desc: "Fast and reliable delivery to 500+ locations with professional installation services.",
+    color: "#ef4444",
+  },
+  {
+    icon: "🔧",
+    title: "Free Installation & Training",
+    desc: "Complimentary installation by certified technicians with comprehensive product training.",
+    color: "#06b6d4",
+  },
+];
 
-export default function ClientPage({ tenant, products, categories }: Props) {
-  const c = tenant.primaryColor || "#22c55e"
-  const [cur, setCur] = useState(0)
-  const [anim, setAnim] = useState(true)
-  const [progress, setProg] = useState(0)
-  const [activeCat, setActiveCat] = useState("all")
-  const [scrolled, setScrolled] = useState(false)
-  const [imgLoaded, setImgLoaded] = useState<boolean[]>(HERO_SLIDES.map(() => false))
-  const [inquiryOpen, setInquiryOpen] = useState(false)
-  const [inquiryProduct, setInquiryProduct] = useState<Product | null>(null)
-  const [formData, setFormData] = useState({ name:"", email:"", phone:"", message:"", quantity:"" })
-  const [formSent, setFormSent] = useState(false)
-  const [sending, setSending] = useState(false)
-  const [mobileMenu, setMobileMenu] = useState(false)
-  const [cart, setCart] = useState<CartItem[]>([])
-  const [cartOpen, setCartOpen] = useState(false)
-  const [cartAnim, setCartAnim] = useState<string | null>(null)
+const COMPARISON_ROWS = [
+  { feature: "Product Availability", satyajan: true, online: true, local: true },
+  { feature: "Expert Guidance", satyajan: "Experienced Team", online: "Limited", local: "Depends" },
+  { feature: "Proper Product Recommendation", satyajan: true, online: "Limited", local: "Depends" },
+  { feature: "Installation Support", satyajan: true, online: "Limited", local: "Depends" },
+  { feature: "Fast Delivery (Same/Next Day)", satyajan: true, online: "By Location", local: "Limited" },
+  { feature: "Paperless Warranty Support", satyajan: true, online: "Limited", local: "Depends" },
+  { feature: "Warranty Claim Assistance", satyajan: true, online: "Limited", local: "Depends" },
+  { feature: "After-Sales Service", satyajan: true, online: "Limited", local: "Limited" },
+  { feature: "Direct Expert Support (Call/WhatsApp)", satyajan: true, online: "Not Available", local: "Limited" },
+];
 
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const progRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const DURATION = 6500
-  const slide = HERO_SLIDES[cur]
+const TESTIMONIALS_GOOGLE = [
+  {
+    name: "Mallikarjun M",
+    location: "Hyderabad",
+    meta: "Local Guide · 32 reviews",
+    text: "Very reliable and responsive service, from inspection to installation done in matter of hours. Pricing is reasonable and very competitive.",
+    source: "Google",
+    avatar: "M",
+    color: "#3b82f6",
+  },
+  {
+    name: "Akshay Chatala",
+    location: "Hyderabad",
+    meta: "4 reviews",
+    text: "Purchased battery working very & very good service installation done by them.",
+    source: "Google",
+    avatar: "A",
+    color: "#10b981",
+  },
+  {
+    name: "Karthik Srinivasan",
+    location: "Hyderabad",
+    meta: "2 reviews",
+    text: "I had purchased inverter 3 years back, it's working great and I am very happy with the product and after sales service is very good.",
+    source: "Google",
+    avatar: "K",
+    color: "#f59e0b",
+  },
+  {
+    name: "Rushikesh Manchala",
+    location: "Hyderabad",
+    meta: "2 reviews",
+    text: "I am using the invertor from past 2 years till now there is no trouble and its working well. This product is good and can go for it.",
+    source: "Google",
+    avatar: "R",
+    color: "#8b5cf6",
+  },
+  {
+    name: "Atul Ragit",
+    location: "Hyderabad",
+    meta: "ECE Solar · 1 review",
+    text: "Nice Service by Satyajan Energy Solution. Fast Delivery with quality products.",
+    source: "Google",
+    avatar: "A",
+    color: "#ef4444",
+  },
+  {
+    name: "Chandu Yadav",
+    location: "Hyderabad",
+    meta: "4 reviews · 3 photos",
+    text: "Good service whole sale price, fast delivery.",
+    source: "Google",
+    avatar: "C",
+    color: "#06b6d4",
+  },
+  {
+    name: "Syed Sha Kaleem",
+    location: "Hyderabad",
+    meta: "Local Guide · 78 reviews",
+    text: "Battery is working fine no problem since 3-4 years. Great quality product and reliable service from Satyajan.",
+    source: "Google",
+    avatar: "S",
+    color: "#10b981",
+  },
+];
 
-  // Load cart from localStorage
+const TESTIMONIALS_INDIAMART = [
+  {
+    name: "Imran",
+    location: "Hyderabad, Telangana",
+    meta: "05-Jan-2026 · Verified Buyer",
+    text: "Purchased Microtek Inverter — very satisfied with the quality and prompt service by Satyajan Energy Solutions.",
+    source: "IndiaMART",
+    avatar: "I",
+    color: "#f59e0b",
+  },
+  {
+    name: "Akhil Reddy",
+    location: "Adilabad, Telangana",
+    meta: "30-Dec-2022 · Off Grid Solar · Verified Buyer",
+    text: "He has always provided us with the lowest prices and the best quality. Thank you so much Arun garu for your friendly cooperation.",
+    source: "IndiaMART",
+    avatar: "A",
+    color: "#3b82f6",
+  },
+  {
+    name: "Svnarasimha Reddy",
+    location: "Proddatur, Andhra Pradesh",
+    meta: "30-Jan-2026 · Solar Panel · Verified Buyer",
+    text: "Purchased Adani Solar Panels — excellent product and great service experience overall.",
+    source: "IndiaMART",
+    avatar: "S",
+    color: "#8b5cf6",
+  },
+  {
+    name: "Venkatesh",
+    location: "Hyderabad, Telangana",
+    meta: "07-Jan-2026 · Battery · Verified Buyer",
+    text: "Bought Microtek Dura Long Inverter Battery with ADC Technology — response, quality and delivery all excellent.",
+    source: "IndiaMART",
+    avatar: "V",
+    color: "#ef4444",
+  },
+  {
+    name: "Roop",
+    location: "Hyderabad, Telangana",
+    meta: "03-Jan-2026 · SMF Battery · Verified Buyer",
+    text: "Purchased Quanta SMF Battery — response, quality and delivery all excellent. Very happy with Satyajan's service.",
+    source: "IndiaMART",
+    avatar: "R",
+    color: "#06b6d4",
+  },
+];
+
+const PROJECTS = [
+  {
+    title: "Microtek iMAXX Online UPS with Battery Bank",
+    location: "Hyderabad, Telangana",
+    spec: "100 kVA Online UPS",
+    category: "Online UPS",
+    desc: "Installed a Microtek iMAXX 100kVA online UPS with a 32-battery Exide Powersafe SMF bank for a commercial office requiring zero-downtime power.",
+    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+  },
+  {
+    title: "Home Inverter + Tall Tubular Battery",
+    location: "Hyderabad, Telangana",
+    spec: "1250VA / 150Ah",
+    category: "Home Inverter",
+    desc: "Installed a Microtek Heavy Duty inverter with tall tubular battery — providing 6+ hours backup for fans, lights, TV and essential appliances.",
+    img: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&q=80",
+  },
+  {
+    title: "School Classroom Power Backup",
+    location: "Hyderabad, Telangana",
+    spec: "900VA / 150Ah",
+    category: "Educational",
+    desc: "Deployed Microtek inverter + tall tubular battery for a school classroom, ensuring uninterrupted power for fans, lights and smart board.",
+    img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=80",
+  },
+  {
+    title: "Solar PCU + Tall Tubular Battery System",
+    location: "Hyderabad, Telangana",
+    spec: "1kW Solar + 200Ah Storage",
+    category: "Solar + Battery",
+    desc: "Installed Microtek Solar PCU with 2× tall tubular batteries — enabling home to run on solar power during the day and stored energy at night.",
+    img: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&q=80",
+  },
+  {
+    title: "Microtek Inverter with BIG POWERR Battery",
+    location: "Hyderabad, Telangana",
+    spec: "1250VA / 180Ah",
+    category: "Home Inverter",
+    desc: "Complete home power backup with Microtek Heavy Duty inverter and BIG POWERR 180Ah tubular battery — 8+ hours backup for a 3 BHK apartment.",
+    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+  },
+  {
+    title: "Microtek LUXE Inverter + Lithium-Ion Battery",
+    location: "Hyderabad, Telangana",
+    spec: "1100VA / 100Ah LFP",
+    category: "Lithium Battery",
+    desc: "Upgraded from conventional tubular battery to Microtek LFP Lithium-Ion — 3500+ cycles, maintenance-free, 5× faster charging.",
+    img: "https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=600&q=80",
+  },
+];
+
+const PRODUCT_CATEGORIES = [
+  {
+    name: "Solar Solutions",
+    icon: "☀️",
+    desc: "High-efficiency solar panels with 25+ year warranty. Complete on-grid and off-grid solutions.",
+    features: ["25+ year panel warranty", "Govt. subsidy assistance", "On-grid & off-grid options"],
+    img: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&q=80",
+  },
+  {
+    name: "Inverter / Home UPS",
+    icon: "⚡",
+    desc: "Pure sine wave inverters with intelligent battery management. Capacity from 700VA to 2000VA.",
+    features: ["Pure sine wave output", "700VA to 2000VA range", "Smart battery charging"],
+    img: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&q=80",
+  },
+  {
+    name: "Jumbo UPS",
+    icon: "🔋",
+    desc: "High capacity 2KVA to 10KVA for extended backup. Perfect for offices, shops, and large homes.",
+    features: ["2KVA to 10KVA capacity", "Overload protection", "Office & commercial grade"],
+    img: "https://images.unsplash.com/photo-1497440001374-f26997328c1b?w=600&q=80",
+  },
+  {
+    name: "Online UPS",
+    icon: "🖥️",
+    desc: "Wide range from 1KVA to 120KVA. True online double conversion for zero transfer time.",
+    features: ["1KVA to 120KVA range", "Zero transfer time", "For servers & data centers"],
+    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+  },
+  {
+    name: "Tubular Battery",
+    icon: "🔌",
+    desc: "Long-lasting tubular inverter batteries from 80Ah to 220Ah. 36–60 month warranty.",
+    features: ["36–60 month warranty", "80Ah to 220Ah range", "All inverter compatible"],
+    img: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&q=80",
+  },
+  {
+    name: "Lithium Batteries",
+    icon: "🌱",
+    desc: "Advanced lithium-ion with 10+ year lifespan, 3000+ charge cycles, maintenance-free.",
+    features: ["10+ years lifespan", "3000+ charge cycles", "Built-in BMS system"],
+    img: "https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=600&q=80",
+  },
+];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function useScrollY() {
+  const [y, setY] = useState(0);
   useEffect(() => {
-    try { const s = localStorage.getItem(`cart-${tenant.slug}`); if (s) setCart(JSON.parse(s)) } catch {}
-  }, [tenant.slug])
+    const fn = () => setY(window.scrollY);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
+  return y;
+}
 
-  // Save cart
-  useEffect(() => {
-    try { localStorage.setItem(`cart-${tenant.slug}`, JSON.stringify(cart)) } catch {}
-  }, [cart, tenant.slug])
+function StarRating({ count = 5 }: { count?: number }) {
+  return (
+    <span style={{ color: "#f59e0b", fontSize: 14, letterSpacing: 1 }}>
+      {"★".repeat(count)}{"☆".repeat(5 - count)}
+    </span>
+  );
+}
 
-  function addToCart(p: Product) {
-    setCart(prev => {
-      const ex = prev.find(i => i.id === p.id)
-      if (ex) return prev.map(i => i.id === p.id ? { ...i, qty: i.qty + 1 } : i)
-      return [...prev, { ...p, qty: 1 }]
-    })
-    setCartAnim(p.id)
-    setTimeout(() => setCartAnim(null), 700)
+function SourceBadge({ source }: { source: string }) {
+  if (source === "Google") {
+    return (
+      <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, color: "#4285F4" }}>
+        <span style={{ fontSize: 14 }}>G</span> Google
+      </span>
+    );
   }
+  return (
+    <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, color: "#e8732a" }}>
+      <span>IM</span> IndiaMART
+    </span>
+  );
+}
 
-  function removeFromCart(id: string) { setCart(prev => prev.filter(i => i.id !== id)) }
-  function updateQty(id: string, qty: number) {
-    if (qty < 1) { removeFromCart(id); return }
-    setCart(prev => prev.map(i => i.id === id ? { ...i, qty } : i))
-  }
+// ─── Main Component ───────────────────────────────────────────────────────────
+export default function ClientPage({ tenant, products }: ClientPageProps) {
+  const primary = tenant?.primaryColor || "#10b981";
+  const scrollY = useScrollY();
 
-  const cartCount = cart.reduce((s, i) => s + i.qty, 0)
-  const cartTotal = cart.reduce((s, i) => s + (i.price || 0) * i.qty, 0)
+  // State
+  const [heroIdx, setHeroIdx] = useState(0);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [inquiryOpen, setInquiryOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [activeTestimonialTab, setActiveTestimonialTab] = useState<"google" | "indiamart">("google");
+  const [inquiryForm, setInquiryForm] = useState({ name: "", phone: "", email: "", quantity: "1", message: "" });
+  const [inquiryStatus, setInquiryStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [contactForm, setContactForm] = useState({ name: "", email: "", phone: "", message: "" });
+  const [contactStatus, setContactStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [statsVisible, setStatsVisible] = useState(false);
+  const [count1, setCount1] = useState(0);
+  const [count2, setCount2] = useState(0);
+  const [count3, setCount3] = useState(0);
+  const statsRef = useRef<HTMLDivElement>(null);
+
+  // Hero auto-rotate
+  useEffect(() => {
+    const t = setInterval(() => setHeroIdx((i) => (i + 1) % HERO_SLIDES.length), 6500);
+    return () => clearInterval(t);
+  }, []);
+
+  // Stats counter animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setStatsVisible(true); },
+      { threshold: 0.3 }
+    );
+    if (statsRef.current) observer.observe(statsRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 40)
-    window.addEventListener("scroll", fn)
-    return () => window.removeEventListener("scroll", fn)
-  }, [])
+    if (!statsVisible) return;
+    const animate = (setter: (n: number) => void, target: number, duration = 2000) => {
+      const step = target / (duration / 16);
+      let current = 0;
+      const timer = setInterval(() => {
+        current += step;
+        if (current >= target) { setter(target); clearInterval(timer); }
+        else setter(Math.floor(current));
+      }, 16);
+    };
+    animate(setCount1, 1000);
+    animate(setCount2, 15);
+    animate(setCount3, 80);
+  }, [statsVisible]);
+
+  // Cart persistence
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`cart_${tenant?.slug}`);
+      if (saved) setCart(JSON.parse(saved));
+    } catch {}
+  }, [tenant?.slug]);
 
   useEffect(() => {
-    HERO_SLIDES.forEach((s, i) => {
-      const img = new window.Image(); img.src = s.image
-      img.onload = () => setImgLoaded(prev => { const n=[...prev]; n[i]=true; return n })
-    })
-  }, [])
+    try {
+      localStorage.setItem(`cart_${tenant?.slug}`, JSON.stringify(cart));
+    } catch {}
+  }, [cart, tenant?.slug]);
 
-  function goTo(n: number) {
-    if (n === cur) return
-    setAnim(false)
-    clearTimeout(timerRef.current!); clearInterval(progRef.current!)
-    setTimeout(() => { setCur(n); setAnim(true); setProg(0) }, 90)
-  }
+  const addToCart = useCallback((p: Product) => {
+    setCart((prev) => {
+      const existing = prev.find((x) => x.id === p.id);
+      if (existing) return prev.map((x) => x.id === p.id ? { ...x, qty: x.qty + 1 } : x);
+      return [...prev, { ...p, qty: 1 }];
+    });
+  }, []);
 
-  useEffect(() => {
-    setProg(0); const start = Date.now()
-    progRef.current = setInterval(() => setProg(Math.min(((Date.now()-start)/DURATION)*100,100)), 40)
-    timerRef.current = setTimeout(() => { setCur(p=>(p+1)%HERO_SLIDES.length); setAnim(true); setProg(0) }, DURATION)
-    return () => { clearTimeout(timerRef.current!); clearInterval(progRef.current!) }
-  }, [cur])
+  const removeFromCart = useCallback((id: string) => {
+    setCart((prev) => prev.filter((x) => x.id !== id));
+  }, []);
 
-  const filtered = activeCat === "all" ? products : products.filter(p => p.category?.slug === activeCat)
-  const heroProducts = products.filter(p => p.isHero).slice(0, 4)
+  const updateQty = useCallback((id: string, delta: number) => {
+    setCart((prev) => prev.map((x) => x.id === id ? { ...x, qty: Math.max(1, x.qty + delta) } : x).filter((x) => x.qty > 0));
+  }, []);
 
-  const ease = "cubic-bezier(0.25,0.46,0.45,0.94)"
-  const reveal = (delay: number) => ({
-    opacity: anim?1:0, filter: anim?"blur(0px)":"blur(8px)",
-    transform: anim?"translateY(0)":"translateY(48px)",
-    transition: `all 0.75s ${ease} ${delay}s`,
-  })
+  const cartCount = cart.reduce((s, x) => s + x.qty, 0);
 
-  const handleInquiry = (product: Product | null = null) => {
-    setInquiryProduct(product)
-    setFormData({ name:"", email:"", phone:"", message:product?`Hi, I'm interested in ${product.name}.`:"", quantity:"" })
-    setFormSent(false); setInquiryOpen(true); setMobileMenu(false)
-  }
+  const filteredProducts = products?.filter((p) =>
+    !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.category?.name.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
+
+  const openInquiry = (p: Product) => {
+    setSelectedProduct(p);
+    setInquiryOpen(true);
+  };
 
   const submitInquiry = async () => {
-    if (!formData.name || !formData.phone) return
-    setSending(true)
+    if (!inquiryForm.name || !inquiryForm.phone) return;
+    setInquiryStatus("sending");
     try {
-      await fetch("/api/inquiries", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ name:formData.name, email:formData.email, phone:formData.phone, message:formData.message||`Enquiry about ${inquiryProduct?.name||tenant.name}`, tenantId:tenant.id, productId:inquiryProduct?.id||null }) })
-    } catch {}
-    setSending(false); setFormSent(true)
-    setTimeout(() => setInquiryOpen(false), 2200)
-  }
+      const res = await fetch("/api/inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...inquiryForm,
+          tenantId: tenant?.id,
+          productId: selectedProduct?.id,
+          message: `Product: ${selectedProduct?.name || "General Inquiry"}\nQty: ${inquiryForm.quantity}\n${inquiryForm.message}`,
+        }),
+      });
+      if (res.ok) {
+        setInquiryStatus("sent");
+        setTimeout(() => { setInquiryOpen(false); setInquiryStatus("idle"); setInquiryForm({ name: "", phone: "", email: "", quantity: "1", message: "" }); }, 2500);
+      } else setInquiryStatus("error");
+    } catch { setInquiryStatus("error"); }
+  };
 
-  const iStyle = { width:"100%", padding:"10px 13px", borderRadius:10, border:"1.5px solid #e5e7eb", fontSize:14, color:"#111827", background:"#fff", outline:"none", fontFamily:"inherit", boxSizing:"border-box" as const }
+  const submitContact = async () => {
+    if (!contactForm.name || !contactForm.phone || !contactForm.message) return;
+    setContactStatus("sending");
+    try {
+      const res = await fetch("/api/inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...contactForm, tenantId: tenant?.id, message: contactForm.message }),
+      });
+      if (res.ok) {
+        setContactStatus("sent");
+        setTimeout(() => { setContactStatus("idle"); setContactForm({ name: "", email: "", phone: "", message: "" }); }, 3000);
+      } else setContactStatus("error");
+    } catch { setContactStatus("error"); }
+  };
+
+  const navbarBg = scrollY > 80;
+  const slide = HERO_SLIDES[heroIdx];
 
   return (
-    <div style={{ fontFamily:"'Plus Jakarta Sans','Inter',system-ui,sans-serif", background:"#fff", color:"#0f172a" }}>
+    <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "#fff", color: "#111", overflowX: "hidden" }}>
+
+      {/* ── CSS Animations ── */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        *{box-sizing:border-box}
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0}
         html{scroll-behavior:smooth}
-        @keyframes floatP{0%,100%{transform:translateY(0) scale(1);opacity:.18}50%{transform:translateY(-22px) scale(1.5);opacity:.55}}
-        @keyframes pulseOrb{0%,100%{transform:scale(1);opacity:.65}50%{transform:scale(1.07);opacity:1}}
-        @keyframes scrollWheel{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(8px);opacity:.2}}
-        @keyframes pingDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
-        @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-33.333%)}}
-        @keyframes modalIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes cartPop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
-        @keyframes slideLeft{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+        .fade-in{animation:fadeIn 0.6s ease forwards}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .slide-up{animation:slideUp 0.5s ease forwards}
+        @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+        .hero-slide{transition:opacity 0.8s ease}
+        .card-hover{transition:transform 0.25s ease,box-shadow 0.25s ease}
+        .card-hover:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,0.12)}
+        .btn-primary{background:${primary};color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:15px;font-weight:600;cursor:pointer;transition:filter 0.2s,transform 0.15s}
+        .btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+        .btn-outline{background:transparent;color:${primary};border:2px solid ${primary};border-radius:8px;padding:10px 22px;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s}
+        .btn-outline:hover{background:${primary};color:#fff}
+        .btn-white{background:#fff;color:#111;border:none;border-radius:8px;padding:12px 24px;font-size:15px;font-weight:600;cursor:pointer;transition:filter 0.2s}
+        .btn-white:hover{filter:brightness(0.92)}
+        .product-card:hover .product-overlay{opacity:1}
+        .product-overlay{opacity:0;transition:opacity 0.25s}
+        .marquee-track{display:flex;gap:40px;animation:marquee 30s linear infinite;white-space:nowrap}
+        @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+        .testimonial-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1px solid #f0f0f0}
+        .reviews-scroll{display:flex;gap:20px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin;scroll-snap-type:x mandatory}
+        .reviews-scroll::-webkit-scrollbar{height:4px}
+        .reviews-scroll::-webkit-scrollbar-track{background:#f1f1f1;border-radius:10px}
+        .reviews-scroll::-webkit-scrollbar-thumb{background:${primary};border-radius:10px}
+        .reviews-scroll>*{scroll-snap-align:start;flex:0 0 300px}
+        input,textarea{width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;outline:none;transition:border-color 0.2s;font-family:inherit}
+        input:focus,textarea:focus{border-color:${primary}}
+        label{font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px}
+        .comparison-check{color:${primary};font-weight:700;font-size:16px}
+        .comparison-x{color:#9ca3af;font-size:14px}
         @media(max-width:768px){
-          .desktop-only{display:none!important}
-          .hero-thumbs{display:none!important}
-          .trust-badges{display:none!important}
+          .hero-btns{flex-direction:column;gap:10px}
+          .hero-stats{flex-direction:column;gap:16px}
+          .why-grid{grid-template-columns:1fr 1fr!important}
+          .products-grid{grid-template-columns:1fr 1fr!important}
           .footer-grid{grid-template-columns:1fr 1fr!important}
-          .inquiry-grid{grid-template-columns:1fr!important}
+          .comparison-table{font-size:12px}
+          .projects-grid{grid-template-columns:1fr!important}
+          .categories-grid{grid-template-columns:1fr 1fr!important}
+          .contact-grid{grid-template-columns:1fr!important}
         }
         @media(max-width:480px){
+          .why-grid{grid-template-columns:1fr!important}
+          .categories-grid{grid-template-columns:1fr!important}
           .footer-grid{grid-template-columns:1fr!important}
+          .products-grid{grid-template-columns:1fr!important}
         }
       `}</style>
 
-      {/* ─── NAVBAR ─── */}
-      <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:200, height:60, background:scrolled?"rgba(255,255,255,0.97)":"transparent", backdropFilter:scrolled?"blur(20px)":"none", borderBottom:scrolled?"1px solid rgba(0,0,0,0.07)":"none", padding:"0 clamp(1rem,4vw,3rem)", display:"flex", alignItems:"center", justifyContent:"space-between", transition:"all 0.4s ease" }}>
-        <Link href={`/?tenant=${tenant.slug}`} style={{ textDecoration:"none", display:"flex", alignItems:"center", gap:8 }}>
-          {tenant.logo
-            ? <img src={tenant.logo} alt={tenant.name} style={{ height:32 }}/>
-            : <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <div style={{ width:32, height:32, borderRadius:8, background:c, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:`0 0 16px ${c}60`, flexShrink:0 }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#fff"/></svg>
+      {/* ── NAVBAR ── */}
+      <nav style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000,
+        background: navbarBg ? "#fff" : "transparent",
+        boxShadow: navbarBg ? "0 2px 20px rgba(0,0,0,0.08)" : "none",
+        transition: "all 0.3s ease",
+        padding: "0 24px",
+      }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", height: 68, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          {/* Logo */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {tenant?.logo ? (
+              <img src={tenant.logo} alt={tenant.name} style={{ height: 40, objectFit: "contain" }} />
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 36, height: 36, background: primary, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>⚡</div>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: navbarBg ? "#111" : "#fff", lineHeight: 1.1 }}>{tenant?.name || "Satyajan"}</div>
+                  <div style={{ fontSize: 10, color: primary, fontWeight: 600, letterSpacing: 1 }}>ENERGY SOLUTIONS</div>
                 </div>
-                <span style={{ fontSize:16, fontWeight:800, letterSpacing:"-0.3px", color:scrolled?"#0f172a":"#fff", whiteSpace:"nowrap" }}>
-                  {tenant.name.split(" ")[0]}<span style={{ color:c }}>{tenant.name.split(" ").length>1?" "+tenant.name.split(" ").slice(1).join(" "):""}</span>
-                </span>
               </div>
-          }
-        </Link>
-
-        {/* Desktop nav */}
-        <div className="desktop-only" style={{ display:"flex", gap:2, alignItems:"center", background:scrolled?"#f8fafc":"rgba(255,255,255,0.08)", border:`1px solid ${scrolled?"#e2e8f0":"rgba(255,255,255,0.15)"}`, borderRadius:50, padding:"4px 5px", backdropFilter:"blur(8px)" }}>
-          {["Home","Products","Why Us","Contact"].map((n,i) => (
-            <a key={n} href={n==="Home"?`/?tenant=${tenant.slug}`:n==="Products"?"#products":n==="Why Us"?"#why-us":"#contact"} style={{ padding:"6px 14px", borderRadius:50, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:12, fontWeight:i===0?600:400, background:i===0?(scrolled?c:"rgba(255,255,255,0.15)"):"transparent", color:i===0?"#fff":(scrolled?"#64748b":"rgba(255,255,255,0.65)"), transition:"all .2s", textDecoration:"none", display:"block" }}>{n}</a>
-          ))}
-        </div>
-
-        <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-          {/* Cart button */}
-          <button onClick={() => setCartOpen(true)} style={{ position:"relative", width:40, height:40, borderRadius:10, border:`1px solid ${scrolled?"#e2e8f0":"rgba(255,255,255,0.25)"}`, background:scrolled?"#fff":"rgba(255,255,255,0.1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={scrolled?"#374151":"#fff"} strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-            {cartCount > 0 && (
-              <span style={{ position:"absolute", top:-6, right:-6, minWidth:18, height:18, borderRadius:99, background:c, color:"#fff", fontSize:10, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 4px", animation:cartAnim?"cartPop 0.7s ease":"none" }}>{cartCount}</span>
             )}
-          </button>
+          </div>
 
-          {/* CTA */}
-          <button onClick={() => handleInquiry()} className="desktop-only" style={{ padding:"8px 18px", borderRadius:8, background:c, color:"#fff", border:"none", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit", boxShadow:`0 4px 14px ${c}50` }}>
-            Get Free Quote
-          </button>
-
-          {/* Hamburger */}
-          <button onClick={() => setMobileMenu(!mobileMenu)} style={{ background:"none", border:"none", cursor:"pointer", padding:4, display:"flex", flexDirection:"column", gap:5 }}>
-            {[0,1,2].map(i => (
-              <div key={i} style={{ width:22, height:2, borderRadius:2, background:scrolled?"#0f172a":"#fff", transition:"all 0.2s", transform:mobileMenu?(i===0?"rotate(45deg) translate(5px,5px)":i===2?"rotate(-45deg) translate(5px,-5px)":"scaleX(0)"):"none" }}/>
+          {/* Desktop nav */}
+          <div style={{ display: "flex", alignItems: "center", gap: 28, fontSize: 14, fontWeight: 500 }}>
+            {["Products", "Categories", "Projects", "Reviews", "Contact"].map((item) => (
+              <a key={item} href={`#${item.toLowerCase()}`} style={{ color: navbarBg ? "#374151" : "rgba(255,255,255,0.9)", textDecoration: "none", transition: "color 0.2s" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = navbarBg ? "#374151" : "rgba(255,255,255,0.9)")}>
+                {item}
+              </a>
             ))}
-          </button>
+          </div>
+
+          {/* Right controls */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {/* Search */}
+            <button onClick={() => setSearchOpen(!searchOpen)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: navbarBg ? "#374151" : "#fff", padding: 6, borderRadius: 8 }}>🔍</button>
+            {/* Phone */}
+            <a href="tel:+918019179159" style={{ display: "flex", alignItems: "center", gap: 6, color: navbarBg ? "#374151" : "#fff", textDecoration: "none", fontSize: 13, fontWeight: 600 }}>
+              <span>📞</span> +91 8019179159
+            </a>
+            {/* Cart */}
+            <button onClick={() => setCartOpen(true)} style={{ position: "relative", background: "none", border: "none", cursor: "pointer", fontSize: 20, color: navbarBg ? "#374151" : "#fff", padding: 6 }}>
+              🛒
+              {cartCount > 0 && (
+                <span style={{ position: "absolute", top: 0, right: 0, background: primary, color: "#fff", borderRadius: "50%", width: 18, height: 18, fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>{cartCount}</span>
+              )}
+            </button>
+            {/* Mobile menu */}
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: navbarBg ? "#374151" : "#fff", display: "none" }} className="mobile-menu-btn">☰</button>
+          </div>
         </div>
+
+        {/* Search bar */}
+        {searchOpen && (
+          <div style={{ background: "#fff", padding: "12px 24px", borderTop: "1px solid #f0f0f0" }}>
+            <div style={{ maxWidth: 600, margin: "0 auto", position: "relative" }}>
+              <input
+                autoFocus
+                placeholder="Search products, categories..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ paddingLeft: 40 }}
+              />
+              <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16 }}>🔍</span>
+              {searchQuery && (
+                <button onClick={() => { setSearchQuery(""); setSearchOpen(false); }} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", fontSize: 18, color: "#9ca3af" }}>✕</button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div style={{ background: "#fff", padding: "16px 24px", borderTop: "1px solid #f0f0f0", display: "flex", flexDirection: "column", gap: 16 }}>
+            {["Products", "Categories", "Projects", "Reviews", "Contact"].map((item) => (
+              <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setMobileMenuOpen(false)} style={{ color: "#374151", textDecoration: "none", fontWeight: 600, fontSize: 15 }}>{item}</a>
+            ))}
+            <a href="tel:+918019179159" style={{ color: primary, fontWeight: 700, textDecoration: "none" }}>📞 +91 8019179159</a>
+          </div>
+        )}
       </nav>
 
-      {/* Mobile menu */}
-      {mobileMenu && (
-        <div style={{ position:"fixed", top:60, left:0, right:0, background:"#fff", borderBottom:"1px solid #f1f5f9", padding:"1rem", zIndex:199, boxShadow:"0 8px 32px rgba(0,0,0,0.1)" }}>
-          {[{label:"Products",href:"#products"},{label:"Why Us",href:"#why-us"},{label:"Contact",href:"#contact"}].map(l => (
-            <a key={l.label} href={l.href} onClick={() => setMobileMenu(false)} style={{ display:"block", padding:"12px 16px", fontSize:15, fontWeight:500, color:"#374151", textDecoration:"none", borderBottom:"1px solid #f8fafc" }}>{l.label}</a>
-          ))}
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginTop:12 }}>
-            <button onClick={() => { setCartOpen(true); setMobileMenu(false) }} style={{ padding:"12px", background:"#f8fafc", color:"#374151", border:"1px solid #e2e8f0", borderRadius:10, fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
-              🛒 Cart ({cartCount})
-            </button>
-            <button onClick={() => handleInquiry()} style={{ padding:"12px", background:c, color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
-              Get Free Quote
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ─── HERO SLIDER ─── */}
-      <section style={{ position:"relative", width:"100%", height:"100vh", minHeight:580, overflow:"hidden" }}>
-        {HERO_SLIDES.map((s,i) => (
-          <div key={i} style={{ position:"absolute", inset:0, backgroundImage:imgLoaded[i]?`url(${s.image})`:"none", backgroundSize:"cover", backgroundPosition:"center", backgroundColor:"#0a0a14", opacity:i===cur?1:0, transition:"opacity 1.2s cubic-bezier(0.4,0,0.2,1)" }}>
-            <div style={{ position:"absolute", inset:0, background:s.overlay }}/>
+      {/* ── HERO SLIDER ── */}
+      <section style={{ position: "relative", height: "100vh", minHeight: 600, overflow: "hidden" }}>
+        {HERO_SLIDES.map((s, i) => (
+          <div key={i} style={{
+            position: "absolute", inset: 0,
+            backgroundImage: `url(${s.bg})`, backgroundSize: "cover", backgroundPosition: "center",
+            opacity: i === heroIdx ? 1 : 0,
+            transition: "opacity 0.8s ease",
+            zIndex: i === heroIdx ? 1 : 0,
+          }}>
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.2) 100%)" }} />
           </div>
         ))}
-        <div style={{ position:"absolute", inset:0, zIndex:1, pointerEvents:"none", background:"linear-gradient(to right,rgba(0,0,0,0.7) 0%,rgba(0,0,0,0.35) 55%,transparent 100%)" }}/>
-        <div style={{ position:"absolute", inset:0, zIndex:1, pointerEvents:"none", background:"linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 50%)" }}/>
-        <div style={{ position:"absolute", inset:0, zIndex:1, pointerEvents:"none", backgroundImage:"linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px)", backgroundSize:"80px 80px" }}/>
-
-        <div style={{ position:"absolute", inset:0, zIndex:2, pointerEvents:"none" }}>
-          {[[12,18,0,3.2],[78,55,0.9,4],[42,82,1.6,3.6],[88,22,2.3,5],[22,68,3.1,4.4],[65,38,0.5,3.8]].map(([x,y,d,dur],i) => (
-            <div key={i} style={{ position:"absolute", left:`${x}%`, top:`${y}%`, width:4, height:4, borderRadius:"50%", background:"rgba(255,255,255,0.22)", animation:`floatP ${dur}s ease-in-out ${d}s infinite` }}/>
-          ))}
-          <div style={{ position:"absolute", right:"10%", top:"25%", width:280, height:280, borderRadius:"50%", background:`radial-gradient(circle,${c}18 0%,transparent 70%)`, animation:"pulseOrb 5s ease-in-out infinite" }}/>
-        </div>
-
-        <div style={{ position:"absolute", top:80, left:"50%", transform:"translateX(-50%)", zIndex:10, opacity:anim?1:0, transition:"opacity .5s ease .1s", whiteSpace:"nowrap" }}>
-          <div style={{ padding:"6px 18px", borderRadius:50, background:"rgba(34,197,94,0.12)", border:`1px solid ${c}55`, backdropFilter:"blur(8px)", fontSize:11.5, fontWeight:600, color:c, display:"flex", alignItems:"center", gap:6 }}>
-            <span style={{ width:6, height:6, borderRadius:"50%", background:c, display:"inline-block", animation:"pingDot 2s infinite" }}/>
-            {slide.badge}
-          </div>
-        </div>
-
-        <div style={{ position:"absolute", inset:0, zIndex:10, display:"flex", flexDirection:"column", justifyContent:"center", padding:"0 clamp(1.25rem,8vw,5rem)", paddingTop:80 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20, ...reveal(0.1) }}>
-            <div style={{ width:28, height:2, background:c, borderRadius:2 }}/>
-            <span style={{ fontSize:10.5, fontWeight:700, letterSpacing:"0.22em", color:"rgba(255,255,255,0.5)" }}>{slide.eyebrow}</span>
-          </div>
-          <div style={{ marginBottom:24 }}>
-            {slide.headline.map((line,i) => (
-              <div key={i} style={{ fontSize:"clamp(2.2rem,8vw,6.5rem)", fontWeight:800, lineHeight:1.0, letterSpacing:"-0.04em", color:"#fff", ...reveal(0.2+i*0.09) }}>
-                {line===slide.accent?<span style={{ color:c }}>{line}</span>:line}
-              </div>
-            ))}
-          </div>
-          <p style={{ fontSize:"clamp(13px,1.5vw,16px)", color:"rgba(255,255,255,0.62)", maxWidth:460, lineHeight:1.75, marginBottom:28, ...reveal(0.42) }}>{slide.desc}</p>
-          <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap", marginBottom:36, ...reveal(0.52) }}>
-            <button onClick={() => handleInquiry()} style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 24px", background:c, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", boxShadow:`0 6px 22px ${c}55` }}>
-              {slide.cta}
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9,18 15,12 9,6"/></svg>
-            </button>
-            <a href="#products" style={{ padding:"12px 20px", background:"rgba(255,255,255,0.09)", backdropFilter:"blur(8px)", color:"#fff", border:"1px solid rgba(255,255,255,0.18)", borderRadius:8, fontSize:14, fontWeight:500, textDecoration:"none" }}>Browse Products</a>
-            <span style={{ fontSize:12, color:"rgba(255,255,255,0.35)", display:"flex", alignItems:"center", gap:6 }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.67 4.18 2 2 0 012.48 2H5.5a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 9.9a16 16 0 006.29 6.29l1.26-1.26a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-              {slide.ctaSub}
-            </span>
-          </div>
-          <div style={{ display:"flex", gap:24, alignItems:"center", flexWrap:"wrap", ...reveal(0.62) }}>
-            {slide.stats.map((s,i) => (
-              <div key={i} style={{ display:"flex", flexDirection:"column", gap:2 }}>
-                <span style={{ fontSize:"clamp(1rem,2.2vw,1.7rem)", fontWeight:800, color:"#fff", letterSpacing:"-0.03em" }}>{s.val}</span>
-                <span style={{ fontSize:10, color:"rgba(255,255,255,0.4)", fontWeight:500, letterSpacing:"0.06em" }}>{s.label}</span>
-              </div>
-            )).reduce<React.ReactNode[]>((acc,el,i) => { if(i>0) acc.push(<div key={`d${i}`} style={{ width:1, height:24, background:"rgba(255,255,255,0.12)" }}/>); acc.push(el); return acc },[])}
-          </div>
-        </div>
-
-        {/* Thumbnails - desktop only */}
-        <div className="hero-thumbs" style={{ position:"absolute", right:"clamp(1rem,4vw,3rem)", top:"50%", transform:"translateY(-50%)", zIndex:15, display:"flex", flexDirection:"column", gap:10 }}>
-          {HERO_SLIDES.map((s,i) => {
-            const isAct=i===cur
-            return (
-              <div key={i} onClick={()=>goTo(i)} style={{ width:isAct?185:42, height:50, borderRadius:10, overflow:"hidden", cursor:"pointer", transition:"width 0.5s cubic-bezier(0.4,0,0.2,1),opacity .3s", opacity:isAct?1:0.45, position:"relative", border:`1px solid ${isAct?c:"rgba(255,255,255,0.14)"}`, flexShrink:0 }}>
-                <div style={{ position:"absolute", inset:0, backgroundImage:`url(${s.image})`, backgroundSize:"cover", backgroundPosition:"center", filter:isAct?"none":"grayscale(60%)" }}/>
-                <div style={{ position:"absolute", inset:0, background:isAct?"rgba(0,0,0,0.38)":"rgba(0,0,0,0.58)" }}/>
-                {isAct&&<div style={{ position:"absolute", inset:0, padding:"0 10px", display:"flex", alignItems:"center", fontSize:9, fontWeight:700, color:"#fff", letterSpacing:"0.09em", whiteSpace:"nowrap" }}>{s.label}</div>}
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Mobile dots */}
-        <div style={{ position:"absolute", bottom:48, left:"50%", transform:"translateX(-50%)", zIndex:20, display:"flex", gap:8 }} className="mobile-dots">
-          {HERO_SLIDES.map((_,i) => (
-            <div key={i} onClick={()=>goTo(i)} style={{ width:cur===i?20:6, height:6, borderRadius:3, background:cur===i?"#fff":"rgba(255,255,255,0.35)", cursor:"pointer", transition:"all 0.3s ease" }}/>
-          ))}
-        </div>
-
-        <div style={{ position:"absolute", bottom:0, left:0, right:0, zIndex:20, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px clamp(1.25rem,6vw,4rem)", background:"linear-gradient(to top,rgba(0,0,0,0.5) 0%,transparent 100%)" }}>
-          <span style={{ fontSize:11, color:"rgba(255,255,255,0.3)", letterSpacing:"0.12em", fontWeight:600 }}>
-            {String(cur+1).padStart(2,"0")} / {String(HERO_SLIDES.length).padStart(2,"0")}
-          </span>
-          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:4, opacity:.35 }}>
-            <div style={{ width:16, height:26, border:"1px solid rgba(255,255,255,0.5)", borderRadius:10, display:"flex", justifyContent:"center", paddingTop:5 }}>
-              <div style={{ width:2, height:5, background:"#fff", borderRadius:2, animation:"scrollWheel 2s infinite" }}/>
+        <div style={{ position: "relative", zIndex: 2, height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 32px", maxWidth: 1280, margin: "0 auto" }}>
+          <div key={heroIdx} className="fade-in">
+            <div style={{ display: "inline-block", background: primary, color: "#fff", fontSize: 12, fontWeight: 700, letterSpacing: 2, padding: "6px 14px", borderRadius: 20, marginBottom: 20, textTransform: "uppercase" }}>
+              {slide.eyebrow}
+            </div>
+            <h1 style={{ fontSize: "clamp(32px,5vw,64px)", fontWeight: 900, color: "#fff", lineHeight: 1.1, marginBottom: 20, maxWidth: 720, textShadow: "0 2px 20px rgba(0,0,0,0.3)" }}>
+              {slide.headline}
+            </h1>
+            <p style={{ fontSize: "clamp(15px,2vw,18px)", color: "rgba(255,255,255,0.88)", maxWidth: 560, lineHeight: 1.7, marginBottom: 36 }}>
+              {slide.sub}
+            </p>
+            <div className="hero-btns" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 48 }}>
+              <button className="btn-primary" onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })} style={{ padding: "14px 32px", fontSize: 16 }}>
+                {slide.cta1} →
+              </button>
+              <button className="btn-white" onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })} style={{ padding: "14px 32px", fontSize: 16 }}>
+                {slide.cta2}
+              </button>
+            </div>
+            <div ref={statsRef} className="hero-stats" style={{ display: "flex", gap: 40 }}>
+              {[
+                { num: `${count1}+`, label: "Happy Customers" },
+                { num: `${count2}+`, label: "Years Experience" },
+                { num: `${count3}%`, label: "Bill Savings" },
+              ].map((s) => (
+                <div key={s.label}>
+                  <div style={{ fontSize: 32, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{s.num}</div>
+                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", fontWeight: 500, marginTop: 4 }}>{s.label}</div>
+                </div>
+              ))}
             </div>
           </div>
-          <div className="trust-badges" style={{ display:"flex", gap:14, alignItems:"center" }}>
-            {[{icon:"🔒",text:"BIS"},{icon:"✓",text:"ISO"},{icon:"⭐",text:"4.9"}].map(b => (
-              <div key={b.text} style={{ display:"flex", alignItems:"center", gap:4, fontSize:10, color:"rgba(255,255,255,0.38)", fontWeight:500 }}><span>{b.icon}</span>{b.text}</div>
+        </div>
+
+        {/* Slide dots */}
+        <div style={{ position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)", zIndex: 3, display: "flex", gap: 8 }}>
+          {HERO_SLIDES.map((_, i) => (
+            <button key={i} onClick={() => setHeroIdx(i)} style={{ width: i === heroIdx ? 28 : 8, height: 8, borderRadius: 4, border: "none", background: i === heroIdx ? primary : "rgba(255,255,255,0.5)", cursor: "pointer", transition: "all 0.3s" }} />
+          ))}
+        </div>
+
+        {/* Prev/Next */}
+        {["←", "→"].map((arrow, ai) => (
+          <button key={arrow} onClick={() => setHeroIdx((heroIdx + (ai === 0 ? -1 : 1) + HERO_SLIDES.length) % HERO_SLIDES.length)}
+            style={{ position: "absolute", top: "50%", [ai === 0 ? "left" : "right"]: 20, transform: "translateY(-50%)", zIndex: 3, background: "rgba(255,255,255,0.15)", backdropFilter: "blur(4px)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", width: 44, height: 44, borderRadius: "50%", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.2s" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.25)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.15)")}>
+            {arrow}
+          </button>
+        ))}
+      </section>
+
+      {/* ── MARQUEE TRUST STRIP ── */}
+      <div style={{ background: primary, padding: "12px 0", overflow: "hidden" }}>
+        <div style={{ display: "flex", overflow: "hidden" }}>
+          <div className="marquee-track">
+            {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
+              <span key={i} style={{ color: "#fff", fontSize: 13, fontWeight: 600, letterSpacing: 0.5, display: "flex", alignItems: "center", gap: 8 }}>
+                <span>⚡</span> {item}
+              </span>
             ))}
           </div>
         </div>
+      </div>
 
-        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:2.5, background:"rgba(255,255,255,0.08)", zIndex:30 }}>
-          <div style={{ height:"100%", width:`${progress}%`, background:c, transition:"width .04s linear", boxShadow:`0 0 8px ${c}80` }}/>
+      {/* ── ABOUT SECTION ── */}
+      <section style={{ padding: "80px 24px", background: "#f8fafc" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: primary, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>About Us</div>
+            <h2 style={{ fontSize: "clamp(28px,3vw,42px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 20 }}>About Satyajan Energy Solutions</h2>
+            <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.8, marginBottom: 20 }}>
+              Satyajan Energy Solutions is an authorized channel partner providing reliable power backup and solar solutions. We offer a wide range of inverters, batteries, UPS systems, and solar solutions to ensure uninterrupted power for homes and businesses.
+            </p>
+            <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.8, marginBottom: 32 }}>
+              With years of experience and a commitment to quality, we deliver energy-efficient and future-ready solutions. Our team provides fast delivery, expert installation, and strong after-sales support. Trusted by dealers and customers across the region.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 32 }}>
+              {[{ icon: "🎯", title: "Our Mission", desc: "Reliable, sustainable energy solutions for homes and businesses across India." },
+                { icon: "👁️", title: "Our Vision", desc: "India's most trusted partner for clean energy and power backup." },
+                { icon: "💎", title: "Our Values", desc: "Quality, reliability, customer satisfaction and sustainability." }].map((v) => (
+                <div key={v.title} style={{ padding: 16, background: "#fff", borderRadius: 10, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", textAlign: "center" }}>
+                  <div style={{ fontSize: 24, marginBottom: 8 }}>{v.icon}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>{v.title}</div>
+                  <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.6 }}>{v.desc}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 12 }}>
+              <span style={{ background: "#f0fdf4", color: "#15803d", padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>✓ GST: 36ABGCS0416A1ZX</span>
+              <span style={{ background: "#eff6ff", color: "#1d4ed8", padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>✓ Authorized Microtek Partner</span>
+            </div>
+          </div>
+          <div style={{ position: "relative" }}>
+            <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=700&q=80" alt="Solar Energy" style={{ width: "100%", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }} />
+            <div style={{ position: "absolute", bottom: -24, left: -24, background: primary, color: "#fff", borderRadius: 12, padding: "16px 20px", boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>
+              <div style={{ fontSize: 28, fontWeight: 900 }}>1000+</div>
+              <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.9 }}>Happy Customers</div>
+            </div>
+            <div style={{ position: "absolute", top: -16, right: -16, background: "#fff", borderRadius: 12, padding: "12px 16px", boxShadow: "0 8px 24px rgba(0,0,0,0.1)" }}>
+              <div style={{ fontSize: 20, fontWeight: 900, color: primary }}>4.9 ★</div>
+              <div style={{ fontSize: 11, color: "#6b7280" }}>200+ Reviews</div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ─── MARQUEE ─── */}
-      <div style={{ background:"#0f172a", padding:"12px 0", overflow:"hidden" }}>
-        <div style={{ display:"flex", animation:"marquee 30s linear infinite", width:"max-content" }}>
-          {[...Array(3)].map((_,rep) => (
-            <div key={rep} style={{ display:"flex", flexShrink:0 }}>
-              {["✦ 50,000+ Happy Customers","✦ 500+ Dealer Network","✦ BIS & ISO Certified","✦ 15+ Years Experience","✦ Genuine Products","✦ Pan-India Delivery","✦ 7-Year Battery Warranty","✦ 24/7 Support"].map(t => (
-                <span key={t} style={{ fontSize:12, fontWeight:600, color:"rgba(255,255,255,0.45)", letterSpacing:"0.08em", padding:"0 32px", whiteSpace:"nowrap" }}>{t}</span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ─── CTA BANNER ─── */}
-      <div style={{ background:`linear-gradient(135deg,${c}15 0%,${c}06 100%)`, borderBottom:`1px solid ${c}20`, padding:"1.5rem clamp(1.25rem,5vw,3rem)" }}>
-        <div style={{ maxWidth:960, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
-          <div>
-            <h2 style={{ fontSize:"clamp(1rem,3vw,1.35rem)", fontWeight:700, color:"#0f172a", marginBottom:4 }}>Power Backup Solutions You Can Trust</h2>
-            <p style={{ fontSize:14, color:"#475569", lineHeight:1.6 }}>From small shops to offices and homes — genuine products, fast delivery, service support.</p>
+      {/* ── PRODUCT CATEGORIES ── */}
+      <section id="categories" style={{ padding: "80px 24px", background: "#fff" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: primary, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Our Products & Services</div>
+            <h2 style={{ fontSize: "clamp(28px,3vw,42px)", fontWeight: 800, marginBottom: 16 }}>Comprehensive Power Solutions</h2>
+            <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 560, margin: "0 auto" }}>Backed by Microtek's quality and our expert local support in Hyderabad.</p>
           </div>
-          <button onClick={() => handleInquiry()} style={{ padding:"11px 24px", background:c, color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", flexShrink:0, boxShadow:`0 4px 14px ${c}45` }}>📞 Contact Us</button>
-        </div>
-      </div>
-
-      {/* ─── FEATURED ─── */}
-      {heroProducts.length > 0 && (
-        <section style={{ padding:"3rem clamp(1rem,5vw,3rem)", background:"#fff" }}>
-          <div style={{ maxWidth:1400, margin:"0 auto" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:"2rem" }}>
-              <div>
-                <div style={{ fontSize:11, fontWeight:700, color:c, letterSpacing:"0.15em", marginBottom:6 }}>⭐ FEATURED PICKS</div>
-                <h2 style={{ fontSize:"clamp(1.3rem,3.5vw,2rem)", fontWeight:800, letterSpacing:"-0.03em" }}>Editor's Choice</h2>
+          <div className="categories-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+            {PRODUCT_CATEGORIES.map((cat) => (
+              <div key={cat.name} className="card-hover" style={{ borderRadius: 14, overflow: "hidden", border: "1px solid #f0f0f0", background: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+                <div style={{ position: "relative", height: 180, overflow: "hidden" }}>
+                  <img src={cat.img} alt={cat.name} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")} />
+                  <div style={{ position: "absolute", top: 12, left: 12, background: primary, color: "#fff", borderRadius: 8, padding: "4px 10px", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                    {cat.icon} {cat.name}
+                  </div>
+                </div>
+                <div style={{ padding: "20px 20px 24px" }}>
+                  <p style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.7, marginBottom: 16 }}>{cat.desc}</p>
+                  <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+                    {cat.features.map((f) => (
+                      <li key={f} style={{ fontSize: 13, color: "#374151", display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ color: primary, fontWeight: 700 }}>✓</span> {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <button className="btn-outline" onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", marginTop: 20, textAlign: "center" as const }}>
+                    View Products →
+                  </button>
+                </div>
               </div>
-              <a href="#products" style={{ fontSize:13, fontWeight:600, color:c, border:`1.5px solid ${c}`, borderRadius:8, padding:"8px 16px", textDecoration:"none" }}>View All →</a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── LIVE PRODUCTS ── */}
+      <section id="products" style={{ padding: "80px 24px", background: "#f8fafc" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 40, flexWrap: "wrap", gap: 16 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: primary, letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Catalog</div>
+              <h2 style={{ fontSize: "clamp(24px,2.5vw,38px)", fontWeight: 800 }}>Our Products</h2>
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,240px),1fr))", gap:16 }}>
-              {heroProducts.map(p => <ProductCard key={p.id} p={p} c={c} tenant={tenant} onInquiry={()=>handleInquiry(p)} onAddToCart={()=>addToCart(p)} isAnimating={cartAnim===p.id}/>)}
+            <div style={{ position: "relative" }}>
+              <input placeholder="Search products..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: 260, paddingLeft: 36 }} />
+              <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)" }}>🔍</span>
             </div>
           </div>
-        </section>
-      )}
 
-      {/* ─── ALL PRODUCTS ─── */}
-      <section id="products" style={{ padding:"3rem clamp(1rem,5vw,3rem)", background:"#f8fafc" }}>
-        <div style={{ maxWidth:1400, margin:"0 auto" }}>
-          <div style={{ textAlign:"center", marginBottom:"2rem" }}>
-            <span style={{ display:"inline-block", padding:"4px 16px", borderRadius:99, background:`${c}15`, border:`1px solid ${c}30`, color:c, fontSize:12, fontWeight:700, marginBottom:10 }}>Our Collection</span>
-            <h2 style={{ fontSize:"clamp(1.4rem,4vw,2.25rem)", fontWeight:800, letterSpacing:"-0.03em", marginBottom:8 }}>
-              Browse <em style={{ color:c, fontStyle:"italic" }}>All Products</em>
-            </h2>
-            <p style={{ color:"#64748b", fontSize:14, maxWidth:440, margin:"0 auto", lineHeight:1.6 }}>
-              {tenant.tagline || "Quality power solutions for homes, shops, and businesses."}
-            </p>
-          </div>
-
-          {categories.length > 0 && (
-            <div style={{ display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap", marginBottom:"2rem" }}>
-              {[{slug:"all",name:"All"}, ...categories].map(cat => (
-                <button key={cat.slug} onClick={()=>setActiveCat(cat.slug)} style={{ padding:"7px 18px", borderRadius:99, fontSize:13, fontWeight:500, cursor:"pointer", transition:"all .2s", border:"1.5px solid", borderColor:activeCat===cat.slug?c:"#e2e8f0", background:activeCat===cat.slug?c:"#fff", color:activeCat===cat.slug?"#fff":"#374151", boxShadow:activeCat===cat.slug?`0 3px 10px ${c}40`:"none", fontFamily:"inherit" }}>{cat.name}</button>
-              ))}
-            </div>
-          )}
-
-          {filtered.length === 0 ? (
-            <div style={{ textAlign:"center", padding:"4rem", color:"#94a3b8" }}>
-              <div style={{ fontSize:48, marginBottom:12 }}>📦</div>
-              <p style={{ fontSize:17, fontWeight:600, color:"#374151", marginBottom:6 }}>No products yet</p>
-              <p style={{ fontSize:13 }}>Products will appear here once added from the admin panel.</p>
+          {filteredProducts.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "60px 24px", color: "#9ca3af" }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>📦</div>
+              <div style={{ fontSize: 18, fontWeight: 600 }}>{searchQuery ? "No products found" : "No products available yet"}</div>
+              <div style={{ fontSize: 14, marginTop: 8 }}>{searchQuery ? "Try a different search term" : "Products will appear here once added."}</div>
             </div>
           ) : (
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,240px),1fr))", gap:16 }}>
-              {filtered.map(p => <ProductCard key={p.id} p={p} c={c} tenant={tenant} onInquiry={()=>handleInquiry(p)} onAddToCart={()=>addToCart(p)} isAnimating={cartAnim===p.id}/>)}
+            <div className="products-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 24 }}>
+              {filteredProducts.map((p) => (
+                <div key={p.id} className="card-hover product-card" style={{ background: "#fff", borderRadius: 14, overflow: "hidden", border: "1px solid #f0f0f0", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", position: "relative" }}>
+                  <div style={{ position: "relative", height: 200, background: "#f3f4f6", overflow: "hidden" }}>
+                    {p.images?.[0] ? (
+                      <img src={p.images[0]} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48 }}>⚡</div>
+                    )}
+                    {/* Quick enquiry overlay */}
+                    <div className="product-overlay" style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <button className="btn-primary" onClick={() => openInquiry(p)} style={{ fontSize: 14, padding: "10px 20px" }}>
+                        Quick Enquiry
+                      </button>
+                    </div>
+                    {p.category?.name && (
+                      <div style={{ position: "absolute", top: 10, left: 10, background: primary, color: "#fff", borderRadius: 6, padding: "3px 10px", fontSize: 11, fontWeight: 700 }}>
+                        {p.category.name}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ padding: "16px 16px 20px" }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, lineHeight: 1.3 }}>{p.name}</h3>
+                    {p.description && <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6, marginBottom: 12, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.description}</p>}
+                    {p.price && <div style={{ fontSize: 18, fontWeight: 800, color: primary, marginBottom: 14 }}>₹{p.price.toLocaleString("en-IN")}</div>}
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button className="btn-primary" onClick={() => addToCart(p)} style={{ flex: 1, padding: "9px 12px", fontSize: 13 }}>🛒 Add to Cart</button>
+                      <button className="btn-outline" onClick={() => openInquiry(p)} style={{ flex: 1, padding: "9px 12px", fontSize: 13 }}>Enquire</button>
+                    </div>
+                    <a href={`/products/${p.slug}`} style={{ display: "block", textAlign: "center", marginTop: 10, fontSize: 13, color: primary, textDecoration: "none", fontWeight: 600 }}>View Details →</a>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
       </section>
 
-      {/* ─── WHY CHOOSE US ─── */}
-      <section id="why-us" style={{ padding:"3.5rem clamp(1rem,5vw,3rem)", background:"#fff" }}>
-        <div style={{ maxWidth:1200, margin:"0 auto" }}>
-          <div style={{ textAlign:"center", marginBottom:"2.5rem" }}>
-            <div style={{ fontSize:11, fontWeight:700, color:c, letterSpacing:"0.15em", marginBottom:8 }}>WHY CHOOSE US</div>
-            <h2 style={{ fontSize:"clamp(1.4rem,3.5vw,2rem)", fontWeight:800, letterSpacing:"-0.03em" }}>Trusted by Customers Across India</h2>
+      {/* ── WHY CHOOSE US ── */}
+      <section style={{ padding: "80px 24px", background: "#fff" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: primary, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Why Choose Us</div>
+            <h2 style={{ fontSize: "clamp(28px,3vw,42px)", fontWeight: 800, marginBottom: 16 }}>Why Choose Satyajan Energy?</h2>
+            <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 520, margin: "0 auto" }}>Your trusted partner for reliable power solutions with unmatched service quality.</p>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,280px),1fr))", gap:16 }}>
-            {WHY_US.map((item,i) => (
-              <div key={i} style={{ display:"flex", gap:14, padding:"18px 20px", borderRadius:12, border:"1px solid #f1f5f9", background:"#fafcff", transition:"all .2s" }}
-                onMouseEnter={e=>{(e.currentTarget as HTMLDivElement).style.borderColor=c;(e.currentTarget as HTMLDivElement).style.boxShadow=`0 8px 24px ${c}18`}}
-                onMouseLeave={e=>{(e.currentTarget as HTMLDivElement).style.borderColor="#f1f5f9";(e.currentTarget as HTMLDivElement).style.boxShadow="none"}}>
-                <div style={{ fontSize:24, flexShrink:0 }}>{item.icon}</div>
-                <div>
-                  <div style={{ fontSize:14, fontWeight:700, color:"#0f172a", marginBottom:4 }}>{item.title}</div>
-                  <div style={{ fontSize:13, color:"#64748b", lineHeight:1.6 }}>{item.desc}</div>
+          <div className="why-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginBottom: 64 }}>
+            {WHY_CARDS.map((card) => (
+              <div key={card.title} className="card-hover" style={{ background: "#fff", borderRadius: 16, padding: "32px 28px", textAlign: "center", boxShadow: "0 2px 12px rgba(0,0,0,0.07)", border: "1px solid #f0f0f0" }}>
+                <div style={{ width: 64, height: 64, background: `${card.color}18`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 28 }}>
+                  {card.icon}
                 </div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 10, color: "#111" }}>{card.title}</h3>
+                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.7 }}>{card.desc}</p>
               </div>
             ))}
+          </div>
+
+          {/* Comparison Table */}
+          <div>
+            <h3 style={{ fontSize: 22, fontWeight: 800, textAlign: "center", marginBottom: 8 }}>More Than Just a Product — We're Your Energy Partner</h3>
+            <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 32, fontSize: 15 }}>We go beyond selling. From recommendation to installation and warranty support — we're with you every step.</p>
+            <div style={{ overflowX: "auto", borderRadius: 12, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
+              <table className="comparison-table" style={{ width: "100%", borderCollapse: "collapse", background: "#fff" }}>
+                <thead>
+                  <tr style={{ background: "#f8fafc" }}>
+                    {["Feature", "⚡ Satyajan Energy", "🛒 Online Platforms", "🏪 Local Sellers"].map((h, i) => (
+                      <th key={h} style={{ padding: "14px 20px", textAlign: i === 0 ? "left" : "center", fontSize: 14, fontWeight: 700, color: i === 1 ? primary : "#374151", borderBottom: "2px solid #e5e7eb" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {COMPARISON_ROWS.map((row, i) => (
+                    <tr key={row.feature} style={{ background: i % 2 === 0 ? "#fff" : "#f9fafb" }}>
+                      <td style={{ padding: "12px 20px", fontSize: 14, color: "#374151", fontWeight: 500 }}>{row.feature}</td>
+                      {[row.satyajan, row.online, row.local].map((val, vi) => (
+                        <td key={vi} style={{ padding: "12px 20px", textAlign: "center", fontSize: 13 }}>
+                          {val === true ? <span className="comparison-check">✓</span> :
+                            val === false ? <span className="comparison-x">✗</span> :
+                              <span style={{ color: vi === 0 ? primary : "#9ca3af", fontWeight: vi === 0 ? 600 : 400 }}>{val}</span>}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 28 }}>
+              <a href="https://wa.me/918019179159?text=Hi, I want expert guidance before buying" target="_blank" rel="noreferrer">
+                <button className="btn-primary" style={{ padding: "13px 28px" }}>Get Expert Advice — Free 💬</button>
+              </a>
+              <button className="btn-outline" onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })} style={{ padding: "13px 28px" }}>Browse Products</button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ─── TESTIMONIALS ─── */}
-      <section style={{ padding:"3.5rem clamp(1rem,5vw,3rem)", background:"#0f172a" }}>
-        <div style={{ maxWidth:1200, margin:"0 auto" }}>
-          <div style={{ textAlign:"center", marginBottom:"2.5rem" }}>
-            <div style={{ fontSize:11, fontWeight:700, color:c, letterSpacing:"0.15em", marginBottom:8 }}>TESTIMONIALS</div>
-            <h2 style={{ fontSize:"clamp(1.4rem,3.5vw,2rem)", fontWeight:800, letterSpacing:"-0.03em", color:"#fff" }}>What Our Customers Say</h2>
+      {/* ── CTA POWER BACKUP ── */}
+      <section style={{ background: `linear-gradient(135deg, #0f172a 0%, #1e293b 50%, ${primary}22 100%)`, padding: "72px 24px", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: -60, right: -60, width: 300, height: 300, background: `${primary}15`, borderRadius: "50%", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: -40, left: -40, width: 200, height: 200, background: `${primary}10`, borderRadius: "50%", pointerEvents: "none" }} />
+        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center", position: "relative", zIndex: 1 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: primary, letterSpacing: 3, textTransform: "uppercase", marginBottom: 16 }}>Power Backup Solutions</div>
+          <h2 style={{ fontSize: "clamp(28px,3.5vw,48px)", fontWeight: 900, color: "#fff", marginBottom: 16, lineHeight: 1.15 }}>
+            Power Backup Solutions You Can Trust
+          </h2>
+          <p style={{ fontSize: 17, color: "rgba(255,255,255,0.75)", marginBottom: 36, lineHeight: 1.7, maxWidth: 600, margin: "0 auto 36px" }}>
+            From homes to hospitals, we deliver uninterrupted power. Expert installation, genuine products, after-sales support — all under one roof.
+          </p>
+          <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
+            <button className="btn-primary" onClick={() => openInquiry(null as any)} style={{ padding: "14px 32px", fontSize: 16 }}>Get Free Quote</button>
+            <a href="https://wa.me/918019179159" target="_blank" rel="noreferrer">
+              <button style={{ background: "#25d366", color: "#fff", border: "none", borderRadius: 8, padding: "14px 32px", fontSize: 16, fontWeight: 600, cursor: "pointer", transition: "filter 0.2s" }}
+                onMouseEnter={(e) => (e.currentTarget.style.filter = "brightness(1.1)")}
+                onMouseLeave={(e) => (e.currentTarget.style.filter = "brightness(1)")}>
+                💬 WhatsApp Us
+              </button>
+            </a>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,280px),1fr))", gap:16 }}>
-            {TESTIMONIALS.map((t,i) => (
-              <div key={i} style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:12, padding:"22px" }}>
-                <div style={{ display:"flex", gap:2, marginBottom:12 }}>{[...Array(t.stars)].map((_,j)=><span key={j} style={{ color:"#fbbf24",fontSize:14 }}>★</span>)}</div>
-                <p style={{ fontSize:13.5, color:"rgba(255,255,255,0.7)", lineHeight:1.65, marginBottom:16, fontStyle:"italic" }}>"{t.text}"</p>
-                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                  <div style={{ width:36, height:36, borderRadius:"50%", background:c, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, flexShrink:0 }}>{t.avatar}</div>
+        </div>
+      </section>
+
+      {/* ── OUR PROJECTS ── */}
+      <section id="projects" style={{ padding: "80px 24px", background: "#f8fafc" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: primary, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Our Work</div>
+            <h2 style={{ fontSize: "clamp(28px,3vw,42px)", fontWeight: 800, marginBottom: 16 }}>Our Projects</h2>
+            <p style={{ fontSize: 16, color: "#6b7280" }}>Delivering Reliable Power Backup & Energy Solutions Across India</p>
+          </div>
+          <div className="projects-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+            {PROJECTS.map((proj) => (
+              <div key={proj.title} className="card-hover" style={{ background: "#fff", borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "1px solid #f0f0f0" }}>
+                <div style={{ height: 180, overflow: "hidden", position: "relative" }}>
+                  <img src={proj.img} alt={proj.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <div style={{ position: "absolute", top: 10, left: 10, background: primary, color: "#fff", padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700 }}>{proj.category}</div>
+                </div>
+                <div style={{ padding: "18px 20px 22px" }}>
+                  <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 6 }}>📍 {proj.location}</div>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, lineHeight: 1.3 }}>{proj.title}</h3>
+                  <div style={{ display: "inline-block", background: `${primary}15`, color: primary, borderRadius: 20, padding: "3px 10px", fontSize: 12, fontWeight: 600, marginBottom: 10 }}>{proj.spec}</div>
+                  <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6 }}>{proj.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: "center", marginTop: 36 }}>
+            <a href="https://wa.me/918019179159?text=Hi! I'd like to discuss a power backup project." target="_blank" rel="noreferrer">
+              <button className="btn-primary" style={{ padding: "13px 32px" }}>Discuss Your Project — Free Consultation</button>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ── TESTIMONIALS ── */}
+      <section id="reviews" style={{ padding: "80px 24px", background: "#fff" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: primary, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Reviews</div>
+            <h2 style={{ fontSize: "clamp(28px,3vw,42px)", fontWeight: 800, marginBottom: 8 }}>What Our Clients Say</h2>
+            <p style={{ fontSize: 16, color: "#6b7280" }}>Real reviews from verified customers on Google & IndiaMART.</p>
+          </div>
+
+          {/* Tabs */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 36 }}>
+            {(["google", "indiamart"] as const).map((tab) => (
+              <button key={tab} onClick={() => setActiveTestimonialTab(tab)}
+                style={{ padding: "10px 28px", borderRadius: 30, border: "2px solid", borderColor: activeTestimonialTab === tab ? primary : "#e5e7eb", background: activeTestimonialTab === tab ? primary : "#fff", color: activeTestimonialTab === tab ? "#fff" : "#6b7280", fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.2s", textTransform: "capitalize" }}>
+                {tab === "google" ? "🔍 Google" : "🏭 IndiaMART"} ({tab === "google" ? TESTIMONIALS_GOOGLE.length : TESTIMONIALS_INDIAMART.length})
+              </button>
+            ))}
+          </div>
+
+          <div className="reviews-scroll">
+            {(activeTestimonialTab === "google" ? TESTIMONIALS_GOOGLE : TESTIMONIALS_INDIAMART).map((t, i) => (
+              <div key={i} className="testimonial-card" style={{ minWidth: 300 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                  <StarRating />
+                  <SourceBadge source={t.source} />
+                </div>
+                <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, marginBottom: 16, fontStyle: "italic" }}>"{t.text}"</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 38, height: 38, borderRadius: "50%", background: t.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 15 }}>{t.avatar}</div>
                   <div>
-                    <div style={{ fontSize:13, fontWeight:700, color:"#fff" }}>{t.name}</div>
-                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>{t.role}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700 }}>{t.name}</div>
+                    <div style={{ fontSize: 12, color: "#9ca3af" }}>{t.location} · {t.meta}</div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* ─── CTA SECTION ─── */}
-      <section id="contact" style={{ padding:"3.5rem clamp(1rem,5vw,3rem)", background:`linear-gradient(135deg,${c}18 0%,${c}08 100%)`, borderTop:`1px solid ${c}25`, borderBottom:`1px solid ${c}25` }}>
-        <div style={{ maxWidth:700, margin:"0 auto", textAlign:"center" }}>
-          <div style={{ fontSize:11, fontWeight:700, color:c, letterSpacing:"0.15em", marginBottom:10 }}>FREE CONSULTATION</div>
-          <h2 style={{ fontSize:"clamp(1.4rem,4vw,2.25rem)", fontWeight:800, letterSpacing:"-0.03em", marginBottom:12, lineHeight:1.1 }}>Ready to save on your energy bills?</h2>
-          <p style={{ fontSize:14, color:"#475569", lineHeight:1.7, marginBottom:24, maxWidth:460, margin:"0 auto 24px" }}>Get a free site survey and custom quote. No obligation, no spam.</p>
-          <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
-            <button onClick={()=>handleInquiry()} style={{ padding:"13px 28px", background:c, color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", boxShadow:`0 6px 20px ${c}50` }}>Get Free Quote →</button>
-            <a href={`tel:${tenant.phone||"+919876543210"}`} style={{ padding:"13px 24px", background:"#fff", color:"#0f172a", border:"1.5px solid #e2e8f0", borderRadius:10, fontSize:14, fontWeight:600, fontFamily:"inherit", textDecoration:"none", display:"inline-flex", alignItems:"center", gap:8 }}>📞 Call Now</a>
+          <div style={{ display: "flex", gap: 16, justifyContent: "center", marginTop: 32 }}>
+            <a href="https://share.google/xEUrHKGcodkwsSfRF" target="_blank" rel="noreferrer">
+              <button className="btn-outline" style={{ padding: "10px 24px", fontSize: 14 }}>View all Google Reviews →</button>
+            </a>
+            <a href="https://www.indiamart.com/satyajanenergysolutions/" target="_blank" rel="noreferrer">
+              <button style={{ padding: "10px 24px", fontSize: 14, background: "#fff5eb", color: "#e8732a", border: "2px solid #e8732a", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>View all IndiaMART Reviews →</button>
+            </a>
           </div>
         </div>
       </section>
 
-      {/* ─── FOOTER ─── */}
-      <footer style={{ background:"#0a0a0a", color:"#fff", padding:"3.5rem clamp(1rem,5vw,3rem) 2rem" }}>
-        <div style={{ maxWidth:1400, margin:"0 auto" }}>
-          <div className="footer-grid" style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,180px),1fr))", gap:"2.5rem", marginBottom:"2.5rem" }}>
-            <div>
-              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
-                <div style={{ width:28, height:28, borderRadius:7, background:c, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#fff"/></svg>
-                </div>
-                <span style={{ fontSize:15, fontWeight:800, letterSpacing:"-0.3px" }}>
-                  {tenant.name.split(" ")[0]}<span style={{ color:c }}>{tenant.name.split(" ").length>1?" "+tenant.name.split(" ").slice(1).join(" "):""}</span>
-                </span>
-              </div>
-              <p style={{ color:"rgba(255,255,255,0.4)", fontSize:13, lineHeight:1.65, maxWidth:240 }}>
-                {tenant.description||"Genuine power solutions trusted since 2009. Fast delivery, professional installation."}
-              </p>
-              <div style={{ display:"flex", gap:8, marginTop:16 }}>
-                {["I","F","L","T"].map(s => <div key={s} style={{ width:30, height:30, borderRadius:7, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:11, color:"rgba(255,255,255,0.5)", fontWeight:600 }}>{s}</div>)}
-              </div>
-            </div>
-            <div>
-              <p style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.28)", letterSpacing:"0.16em", marginBottom:12 }}>CATEGORIES</p>
-              {categories.length>0
-                ? categories.map(cat=><a key={cat.slug} href={`/?category=${cat.slug}&tenant=${tenant.slug}`} style={{ display:"block", color:"rgba(255,255,255,0.5)", fontSize:13, textDecoration:"none", marginBottom:8 }} onMouseEnter={e=>(e.currentTarget.style.color="#fff")} onMouseLeave={e=>(e.currentTarget.style.color="rgba(255,255,255,0.5)")}>{cat.name}</a>)
-                : <a href="#products" style={{ display:"block", color:"rgba(255,255,255,0.5)", fontSize:13, textDecoration:"none" }}>All Products</a>
-              }
-            </div>
-            <div>
-              <p style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.28)", letterSpacing:"0.16em", marginBottom:12 }}>QUICK LINKS</p>
-              {["All Products","Why Choose Us","New Arrivals","About Us","Contact"].map(l=>(
-                <a key={l} href="#" style={{ display:"block", color:"rgba(255,255,255,0.5)", fontSize:13, textDecoration:"none", marginBottom:8 }} onMouseEnter={e=>(e.currentTarget.style.color="#fff")} onMouseLeave={e=>(e.currentTarget.style.color="rgba(255,255,255,0.5)")}>{l}</a>
-              ))}
-            </div>
-            <div>
-              <p style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.28)", letterSpacing:"0.16em", marginBottom:12 }}>CONTACT</p>
+      {/* ── CONTACT SECTION ── */}
+      <section id="contact" style={{ padding: "80px 24px", background: "#f8fafc" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: primary, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Contact</div>
+            <h2 style={{ fontSize: "clamp(28px,3vw,42px)", fontWeight: 800, marginBottom: 12 }}>Get In Touch</h2>
+            <p style={{ fontSize: 16, color: "#6b7280" }}>Have questions? We're here to help. Contact us for a free consultation.</p>
+          </div>
+          <div className="contact-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48 }}>
+            {/* Left: info */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               {[
-                {icon:"📞",label:"Phone",val:tenant.phone||"+91 98765 43210"},
-                {icon:"✉️",label:"Email",val:tenant.email||`info@${tenant.slug}.com`},
-                {icon:"📍",label:"Address",val:tenant.address||"Hyderabad, Telangana 500032"},
-              ].map(({icon,label,val})=>(
-                <div key={label} style={{ display:"flex", gap:8, marginBottom:12, alignItems:"flex-start" }}>
-                  <span style={{ fontSize:13, flexShrink:0, marginTop:1 }}>{icon}</span>
-                  <div>
-                    <div style={{ fontSize:9, color:"rgba(255,255,255,0.25)", fontWeight:600, letterSpacing:"0.1em", marginBottom:2 }}>{label.toUpperCase()}</div>
-                    <div style={{ color:"rgba(255,255,255,0.52)", fontSize:12, lineHeight:1.5 }}>{val}</div>
+                { icon: "📞", label: "Phone", value: "+91 8019179159", href: "tel:+918019179159", color: "#3b82f6" },
+                { icon: "📧", label: "Email", value: "info@satyajan.com", href: "mailto:info@satyajan.com", color: "#10b981" },
+                { icon: "📍", label: "Address", value: "Plot No. 47, Green Lands Colony, Karmanghat, LB Nagar, Hyderabad 500079", href: "https://maps.app.goo.gl/vtyTimUrenngkoHn9", color: "#f59e0b" },
+              ].map((item) => (
+                <a key={item.label} href={item.href} target={item.label === "Address" ? "_blank" : undefined} rel="noreferrer" style={{ textDecoration: "none" }}>
+                  <div className="card-hover" style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", display: "flex", alignItems: "center", gap: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", border: "1px solid #f0f0f0" }}>
+                    <div style={{ width: 48, height: 48, background: `${item.color}18`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{item.icon}</div>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: "#9ca3af", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>{item.label}</div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: "#111" }}>{item.value}</div>
+                    </div>
+                  </div>
+                </a>
+              ))}
+              <a href="https://wa.me/918019179159" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                <button style={{ width: "100%", background: "#25d366", color: "#fff", border: "none", borderRadius: 12, padding: "16px", fontSize: 16, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "filter 0.2s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.filter = "brightness(1.1)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.filter = "brightness(1)")}>
+                  💬 WhatsApp Now
+                </button>
+              </a>
+              {/* Google Maps embed */}
+              <div style={{ borderRadius: 12, overflow: "hidden", height: 180 }}>
+                <iframe
+                  title="Satyajan Location"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3806.5!2d78.5387496!3d17.3342621!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb99c0c3e1ffe7:0xa6b7d4b850493ba0!2sSatyajan%20Energy%20Solutions%20Pvt.Ltd.!5e0!3m2!1sen!2sin!4v1234567890123"
+                  width="100%" height="100%" style={{ border: 0 }} loading="lazy"
+                />
+              </div>
+            </div>
+
+            {/* Right: form */}
+            <div style={{ background: "#fff", borderRadius: 16, padding: "36px 32px", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0" }}>
+              <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>Send Us a Message</h3>
+              <p style={{ fontSize: 14, color: "#6b7280", marginBottom: 28 }}>We'll get back to you within 24 hours.</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                <div>
+                  <label>Name *</label>
+                  <input placeholder="Your full name" value={contactForm.name} onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })} />
+                </div>
+                <div>
+                  <label>Email *</label>
+                  <input type="email" placeholder="your.email@example.com" value={contactForm.email} onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })} />
+                </div>
+                <div>
+                  <label>Phone *</label>
+                  <div style={{ position: "relative" }}>
+                    <input placeholder="10-digit mobile number" value={contactForm.phone} onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })} style={{ paddingLeft: 50 }} />
+                    <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 13, fontWeight: 600, color: "#6b7280" }}>+91</span>
                   </div>
                 </div>
-              ))}
+                <div>
+                  <label>Message *</label>
+                  <textarea rows={4} placeholder="Tell us about your requirements (min 10 characters)" value={contactForm.message} onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })} style={{ resize: "vertical" }} />
+                </div>
+                {contactStatus === "sent" ? (
+                  <div style={{ background: "#f0fdf4", color: "#15803d", padding: "14px 18px", borderRadius: 8, fontWeight: 600, textAlign: "center" }}>
+                    ✅ Message sent! We'll respond within 24 hours.
+                  </div>
+                ) : (
+                  <button className="btn-primary" onClick={submitContact} disabled={contactStatus === "sending"} style={{ padding: "14px", fontSize: 16, width: "100%", opacity: contactStatus === "sending" ? 0.7 : 1 }}>
+                    {contactStatus === "sending" ? "Sending..." : "Send Message →"}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-          <div style={{ borderTop:"1px solid rgba(255,255,255,0.06)", paddingTop:"1.5rem", display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:10 }}>
-            <p style={{ color:"rgba(255,255,255,0.2)", fontSize:12 }}>© {new Date().getFullYear()} {tenant.name}. All rights reserved.</p>
-            <div style={{ display:"flex", gap:16 }}>
-              {["Privacy","Terms","Refund"].map(l=><a key={l} href="#" style={{ color:"rgba(255,255,255,0.2)", fontSize:12, textDecoration:"none" }}>{l}</a>)}
+        </div>
+      </section>
+
+      {/* ── READY TO SWITCH CTA ── */}
+      <section style={{ background: `linear-gradient(135deg, ${primary} 0%, #059669 100%)`, padding: "72px 24px", textAlign: "center" }}>
+        <h2 style={{ fontSize: "clamp(28px,3vw,44px)", fontWeight: 900, color: "#fff", marginBottom: 16 }}>Ready to Switch to Clean Energy?</h2>
+        <p style={{ fontSize: 18, color: "rgba(255,255,255,0.88)", marginBottom: 36, maxWidth: 560, margin: "0 auto 36px" }}>
+          Join over 1000+ happy customers who have already made the switch with Satyajan Energy Solutions.
+        </p>
+        <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
+          <button className="btn-white" onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })} style={{ padding: "14px 32px", fontSize: 16 }}>Explore Products</button>
+          <button onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })} style={{ background: "transparent", color: "#fff", border: "2px solid #fff", borderRadius: 8, padding: "14px 32px", fontSize: 16, fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.15)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
+            Contact Us Today
+          </button>
+        </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer style={{ background: "#0f172a", color: "#cbd5e1", padding: "56px 24px 24px" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <div className="footer-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 40, marginBottom: 48 }}>
+            {/* Brand */}
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                <div style={{ width: 36, height: 36, background: primary, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>⚡</div>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>Satyajan</div>
+                  <div style={{ fontSize: 10, color: primary, fontWeight: 600, letterSpacing: 1 }}>ENERGY SOLUTIONS</div>
+                </div>
+              </div>
+              <p style={{ fontSize: 14, lineHeight: 1.8, marginBottom: 16, maxWidth: 280 }}>
+                Your trusted partner for solar solutions, power backup systems, and battery management across India.
+              </p>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#1e293b", padding: "6px 12px", borderRadius: 20, fontSize: 12, marginBottom: 20 }}>
+                <span style={{ color: primary }}>●</span> GST: 36ABGCS0416A1ZX
+              </div>
+              {/* Social */}
+              <div style={{ display: "flex", gap: 10 }}>
+                {[
+                  { icon: "📷", href: "https://www.instagram.com/satyajan.solutions/", label: "Instagram" },
+                  { icon: "👔", href: "https://www.linkedin.com/company/satyajan-energy-solutions-pvt-ltd/", label: "LinkedIn" },
+                  { icon: "👍", href: "https://www.facebook.com/profile.php?id=61577768371371", label: "Facebook" },
+                  { icon: "⭐", href: "https://share.google/UqkYvc7zrN2PjQBi8", label: "Google" },
+                ].map((s) => (
+                  <a key={s.label} href={s.href} target="_blank" rel="noreferrer" title={s.label}
+                    style={{ width: 36, height: 36, background: "#1e293b", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", fontSize: 16, transition: "background 0.2s" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = primary)}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "#1e293b")}>
+                    {s.icon}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 style={{ color: "#fff", fontSize: 15, fontWeight: 700, marginBottom: 20 }}>Quick Links</h4>
+              <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
+                {["Home", "Products", "Services", "Technology", "Blogs", "Careers", "Contact Us", "Terms & Conditions"].map((link) => (
+                  <li key={link}>
+                    <a href="#" style={{ color: "#94a3b8", fontSize: 14, textDecoration: "none", transition: "color 0.2s" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "#94a3b8")}>
+                      {link}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Our Products */}
+            <div>
+              <h4 style={{ color: "#fff", fontSize: 15, fontWeight: 700, marginBottom: 20 }}>Our Products</h4>
+              <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
+                {["Solar Solutions", "Inverter / Home UPS", "Jumbo UPS", "Online UPS", "Tubular Battery", "Lithium Batteries", "Combos"].map((p) => (
+                  <li key={p}>
+                    <a href="#categories" style={{ color: "#94a3b8", fontSize: 14, textDecoration: "none", transition: "color 0.2s" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "#94a3b8")}>
+                      {p}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Our Services */}
+            <div>
+              <h4 style={{ color: "#fff", fontSize: 15, fontWeight: 700, marginBottom: 20 }}>Our Services</h4>
+              <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
+                {["Solar Energy", "Power Backup & UPS", "Battery Services", "Technical Support & After-Sales"].map((s) => (
+                  <li key={s}>
+                    <a href="#" style={{ color: "#94a3b8", fontSize: 14, textDecoration: "none", transition: "color 0.2s" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "#94a3b8")}>
+                      {s}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <h4 style={{ color: "#fff", fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Contact Us</h4>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <a href="tel:+918019179159" style={{ color: "#94a3b8", fontSize: 14, textDecoration: "none" }}>📞 +91 8019179159</a>
+                <a href="mailto:info@satyajan.com" style={{ color: "#94a3b8", fontSize: 14, textDecoration: "none" }}>📧 info@satyajan.com</a>
+                <span style={{ color: "#94a3b8", fontSize: 14 }}>📍 Hyderabad, Telangana, India</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div style={{ borderTop: "1px solid #1e293b", paddingTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
+            <div style={{ fontSize: 13, color: "#64748b" }}>© 2025 Satyajan Energy Solutions Pvt Ltd. All rights reserved.</div>
+            <div style={{ display: "flex", gap: 20 }}>
+              {["Terms of Service", "Privacy Policy", "Cancellation & Refund", "Contact Us"].map((link) => (
+                <a key={link} href="#" style={{ fontSize: 13, color: "#64748b", textDecoration: "none", transition: "color 0.2s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "#64748b")}>
+                  {link}
+                </a>
+              ))}
             </div>
           </div>
         </div>
       </footer>
 
-      {/* ─── INQUIRY MODAL ─── */}
-      {inquiryOpen && (
-        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:400, display:"flex", alignItems:"flex-end", justifyContent:"center", backdropFilter:"blur(4px)" }}
-          onClick={e=>e.target===e.currentTarget&&setInquiryOpen(false)}>
-          <div style={{ background:"#fff", borderRadius:"20px 20px 0 0", width:"100%", maxWidth:520, maxHeight:"92vh", overflowY:"auto", boxShadow:"0 -8px 40px rgba(0,0,0,0.2)", animation:"modalIn .25s ease" }}>
-            <div style={{ padding:"20px 24px 16px", borderBottom:"1px solid #f1f5f9", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
-              <div>
-                <div style={{ fontSize:17, fontWeight:800, color:"#0f172a" }}>Send Enquiry</div>
-                <div style={{ fontSize:13, color:"#94a3b8", marginTop:3 }}>{inquiryProduct?`Re: ${inquiryProduct.name}`:`To: ${tenant.name}`}</div>
-              </div>
-              <button onClick={()=>setInquiryOpen(false)} style={{ background:"none", border:"none", cursor:"pointer", fontSize:22, color:"#94a3b8" }}>×</button>
-            </div>
-            {!formSent ? (
-              <div style={{ padding:"18px 24px 28px" }}>
-                <div className="inquiry-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:12 }}>
-                  {[{key:"name",label:"Full Name *",type:"text",placeholder:"Your full name"},{key:"phone",label:"Phone *",type:"tel",placeholder:"+91 98765 43210"},{key:"email",label:"Email",type:"email",placeholder:"you@email.com"},{key:"quantity",label:"Quantity",type:"text",placeholder:"e.g. 2 units"}].map(f=>(
-                    <div key={f.key}>
-                      <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#374151", marginBottom:5 }}>{f.label}</label>
-                      <input type={f.type} placeholder={f.placeholder} value={(formData as Record<string,string>)[f.key]} onChange={e=>setFormData(p=>({...p,[f.key]:e.target.value}))} style={iStyle}/>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ marginBottom:16 }}>
-                  <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#374151", marginBottom:5 }}>Message</label>
-                  <textarea rows={3} value={formData.message} onChange={e=>setFormData(p=>({...p,message:e.target.value}))} placeholder="Describe your requirements..." style={{ ...iStyle, resize:"vertical" as const }}/>
-                </div>
-                <button onClick={submitInquiry} disabled={sending} style={{ width:"100%", padding:"13px", borderRadius:12, background:sending?"#94a3b8":c, color:"#fff", fontSize:15, fontWeight:700, border:"none", cursor:sending?"not-allowed":"pointer", fontFamily:"inherit" }}>
-                  {sending?"Sending...":"Submit Enquiry →"}
-                </button>
-                <p style={{ textAlign:"center", fontSize:12, color:"#94a3b8", marginTop:8 }}>We'll respond within 24 hours.</p>
-              </div>
-            ) : (
-              <div style={{ padding:"48px 24px", textAlign:"center" }}>
-                <div style={{ fontSize:50, marginBottom:12 }}>✅</div>
-                <div style={{ fontSize:20, fontWeight:800, color:"#16a34a", marginBottom:6 }}>Enquiry Sent!</div>
-                <div style={{ color:"#64748b", fontSize:14 }}>Our team will contact you within 24 hours.</div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* ── FLOATING WHATSAPP ── */}
+      <a href="https://wa.me/918019179159?text=Hi! I have a query about your products." target="_blank" rel="noreferrer"
+        style={{ position: "fixed", bottom: 24, right: 24, zIndex: 999, width: 56, height: 56, background: "#25d366", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, boxShadow: "0 4px 20px rgba(37,211,102,0.4)", textDecoration: "none", transition: "transform 0.2s" }}
+        onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+        onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}>
+        💬
+      </a>
 
-      {/* ─── CART DRAWER ─── */}
+      {/* ── CART DRAWER ── */}
       {cartOpen && (
-        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", zIndex:400, display:"flex", justifyContent:"flex-end", backdropFilter:"blur(4px)" }}
-          onClick={e=>e.target===e.currentTarget&&setCartOpen(false)}>
-          <div style={{ background:"#fff", width:"100%", maxWidth:420, height:"100%", overflowY:"auto", animation:"slideLeft .3s ease", display:"flex", flexDirection:"column" }}>
-            {/* Header */}
-            <div style={{ padding:"20px 24px", borderBottom:"1px solid #f1f5f9", display:"flex", justifyContent:"space-between", alignItems:"center", position:"sticky", top:0, background:"#fff", zIndex:10 }}>
-              <div>
-                <div style={{ fontSize:18, fontWeight:800, color:"#0f172a" }}>Your Cart</div>
-                <div style={{ fontSize:13, color:"#94a3b8" }}>{cartCount} item{cartCount!==1?"s":""}</div>
-              </div>
-              <button onClick={()=>setCartOpen(false)} style={{ background:"none", border:"none", cursor:"pointer", fontSize:24, color:"#94a3b8" }}>×</button>
+        <div style={{ position: "fixed", inset: 0, zIndex: 2000 }}>
+          <div onClick={() => setCartOpen(false)} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)" }} />
+          <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: 400, maxWidth: "100vw", background: "#fff", boxShadow: "-8px 0 40px rgba(0,0,0,0.15)", display: "flex", flexDirection: "column" }} className="slide-up">
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid #f0f0f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h3 style={{ fontSize: 18, fontWeight: 800 }}>🛒 Cart ({cartCount})</h3>
+              <button onClick={() => setCartOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: "#9ca3af" }}>✕</button>
             </div>
-
-            {/* Items */}
-            <div style={{ flex:1, padding:"1rem 24px", overflowY:"auto" }}>
+            <div style={{ flex: 1, overflowY: "auto", padding: "16px 24px" }}>
               {cart.length === 0 ? (
-                <div style={{ textAlign:"center", padding:"4rem 1rem" }}>
-                  <div style={{ fontSize:56, marginBottom:16 }}>🛒</div>
-                  <p style={{ fontSize:17, fontWeight:600, color:"#374151", marginBottom:6 }}>Your cart is empty</p>
-                  <p style={{ fontSize:13, color:"#94a3b8", marginBottom:20 }}>Browse products and add them to your cart</p>
-                  <button onClick={()=>setCartOpen(false)} style={{ padding:"10px 24px", background:c, color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Browse Products</button>
+                <div style={{ textAlign: "center", padding: "48px 0", color: "#9ca3af" }}>
+                  <div style={{ fontSize: 48, marginBottom: 12 }}>🛒</div>
+                  <div style={{ fontSize: 16, fontWeight: 600 }}>Your cart is empty</div>
+                  <div style={{ fontSize: 14, marginTop: 6 }}>Add products to get started</div>
                 </div>
               ) : (
-                cart.map(item => (
-                  <div key={item.id} style={{ display:"flex", gap:14, padding:"14px 0", borderBottom:"1px solid #f8fafc", alignItems:"flex-start" }}>
-                    {/* Image */}
-                    <div style={{ width:72, height:72, borderRadius:10, overflow:"hidden", background:item.images[0]?`url(${item.images[0]}) center/cover`:"linear-gradient(135deg,#0f172a,#1e293b)", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      {!item.images[0] && <span style={{ fontSize:10, color:"rgba(255,255,255,0.5)", fontWeight:600, textAlign:"center", padding:4 }}>{item.name.split(" ")[0]}</span>}
-                    </div>
-                    {/* Info */}
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <p style={{ fontSize:13, fontWeight:600, color:"#0f172a", marginBottom:4, lineHeight:1.3 }}>{item.name}</p>
-                      {item.category && <p style={{ fontSize:11, color:"#94a3b8", marginBottom:8 }}>{item.category.name}</p>}
-                      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                        {/* Qty controls */}
-                        <div style={{ display:"flex", alignItems:"center", gap:0, border:"1px solid #e2e8f0", borderRadius:8, overflow:"hidden" }}>
-                          <button onClick={()=>updateQty(item.id,item.qty-1)} style={{ width:30, height:30, border:"none", background:"#f8fafc", cursor:"pointer", fontSize:16, color:"#374151", fontFamily:"inherit" }}>−</button>
-                          <span style={{ width:36, textAlign:"center", fontSize:13, fontWeight:600, color:"#0f172a" }}>{item.qty}</span>
-                          <button onClick={()=>updateQty(item.id,item.qty+1)} style={{ width:30, height:30, border:"none", background:"#f8fafc", cursor:"pointer", fontSize:16, color:"#374151", fontFamily:"inherit" }}>+</button>
-                        </div>
-                        <div style={{ textAlign:"right" }}>
-                          {item.price
-                            ? <span style={{ fontSize:15, fontWeight:800, color:c }}>₹{(item.price*item.qty).toLocaleString("en-IN")}</span>
-                            : <span style={{ fontSize:12, color:"#94a3b8" }}>Contact for price</span>
-                          }
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  {cart.map((item) => (
+                    <div key={item.id} style={{ display: "flex", gap: 14, padding: "14px", background: "#f8fafc", borderRadius: 10 }}>
+                      <div style={{ width: 64, height: 64, background: "#e5e7eb", borderRadius: 8, overflow: "hidden", flexShrink: 0 }}>
+                        {item.images?.[0] ? <img src={item.images[0]} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>⚡</div>}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{item.name}</div>
+                        {item.price && <div style={{ fontSize: 14, fontWeight: 700, color: primary, marginBottom: 8 }}>₹{item.price.toLocaleString("en-IN")}</div>}
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <button onClick={() => updateQty(item.id, -1)} style={{ width: 28, height: 28, borderRadius: 6, border: "1.5px solid #e5e7eb", background: "#fff", cursor: "pointer", fontSize: 16, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
+                          <span style={{ fontSize: 15, fontWeight: 700, minWidth: 20, textAlign: "center" }}>{item.qty}</span>
+                          <button onClick={() => updateQty(item.id, 1)} style={{ width: 28, height: 28, borderRadius: 6, border: "1.5px solid #e5e7eb", background: "#fff", cursor: "pointer", fontSize: 16, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
+                          <button onClick={() => removeFromCart(item.id)} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: 16 }}>🗑️</button>
                         </div>
                       </div>
                     </div>
-                    {/* Remove */}
-                    <button onClick={()=>removeFromCart(item.id)} style={{ background:"none", border:"none", cursor:"pointer", color:"#ef4444", fontSize:18, padding:"2px 4px", flexShrink:0, lineHeight:1 }}>×</button>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </div>
-
-            {/* Footer */}
             {cart.length > 0 && (
-              <div style={{ padding:"1.25rem 24px", borderTop:"1px solid #f1f5f9", background:"#fff" }}>
-                {cartTotal > 0 && (
-                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
-                    <span style={{ fontSize:15, fontWeight:600, color:"#374151" }}>Estimated Total</span>
-                    <span style={{ fontSize:18, fontWeight:800, color:c }}>₹{cartTotal.toLocaleString("en-IN")}</span>
-                  </div>
-                )}
-                <button onClick={()=>{ setCartOpen(false); handleInquiry(null) }} style={{ width:"100%", padding:"14px", background:c, color:"#fff", border:"none", borderRadius:12, fontSize:15, fontWeight:700, cursor:"pointer", fontFamily:"inherit", marginBottom:10, boxShadow:`0 4px 14px ${c}45` }}>
-                  Request Quote for Cart →
+              <div style={{ padding: "20px 24px", borderTop: "1px solid #f0f0f0" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, fontWeight: 700, fontSize: 16 }}>
+                  <span>Total Items:</span><span>{cartCount}</span>
+                </div>
+                <button className="btn-primary" onClick={() => { setCartOpen(false); openInquiry(null as any); }} style={{ width: "100%", padding: "14px", fontSize: 16, marginBottom: 10 }}>
+                  Request Quote →
                 </button>
-                <button onClick={()=>setCart([])} style={{ width:"100%", padding:"10px", background:"#fef2f2", color:"#dc2626", border:"1px solid #fecaca", borderRadius:10, fontSize:13, fontWeight:500, cursor:"pointer", fontFamily:"inherit" }}>
+                <button onClick={() => setCart([])} style={{ width: "100%", padding: "10px", fontSize: 14, background: "none", border: "1.5px solid #e5e7eb", borderRadius: 8, cursor: "pointer", color: "#6b7280", fontWeight: 600 }}>
                   Clear Cart
                 </button>
-                <p style={{ textAlign:"center", fontSize:11, color:"#94a3b8", marginTop:10 }}>
-                  We'll contact you with best prices for all items
-                </p>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* ─── WHATSAPP ─── */}
-      <a href={`https://wa.me/91${(tenant.phone||"9876543210").replace(/\D/g,"")}`} target="_blank" rel="noopener noreferrer"
-        style={{ position:"fixed", bottom:24, right:22, zIndex:99, width:50, height:50, borderRadius:"50%", background:"#25d366", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 4px 18px rgba(37,211,102,0.5)", textDecoration:"none", transition:"transform .2s" }}
-        onMouseEnter={e=>(e.currentTarget.style.transform="scale(1.1)")} onMouseLeave={e=>(e.currentTarget.style.transform="scale(1)")}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      </a>
-    </div>
-  )
-}
-
-/* ─── PRODUCT CARD ─── */
-function ProductCard({ p, c, tenant, onInquiry, onAddToCart, isAnimating }: { p: Product; c: string; tenant: Tenant; onInquiry: () => void; onAddToCart: () => void; isAnimating: boolean }) {
-  const [hov, setHov] = useState(false)
-  const hasImg = p.images && p.images.length > 0 && p.images[0]
-  const discountPct = p.discount ?? (p.mrp && p.price ? Math.round(((p.mrp-p.price)/p.mrp)*100) : null)
-
-  return (
-    <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
-      style={{ background:"#fff", borderRadius:16, overflow:"hidden", border:`1px solid ${hov?c+"50":"rgba(0,0,0,0.07)"}`, boxShadow:hov?`0 16px 40px rgba(0,0,0,0.11),0 0 0 1px ${c}25`:"0 2px 8px rgba(0,0,0,0.04)", transform:hov?"translateY(-4px)":"none", transition:"all 0.3s cubic-bezier(0.25,0.46,0.45,0.94)", cursor:"pointer", display:"flex", flexDirection:"column" }}>
-      
-      {/* Image */}
-      <div style={{ height:200, position:"relative", overflow:"hidden", background:hasImg?"#f8fafc":"linear-gradient(135deg,#0f172a,#1e293b)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-        {hasImg
-          ? <img src={p.images[0]} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover", transform:hov?"scale(1.05)":"scale(1)", transition:"transform .5s ease" }}/>
-          : <span style={{ fontSize:"clamp(0.9rem,4vw,1.4rem)", fontWeight:700, color:"rgba(255,255,255,0.6)", textAlign:"center", padding:"1rem", lineHeight:1.3 }}>{p.name.split(" ").slice(0,3).join(" ")}</span>
-        }
-        {p.category && <div style={{ position:"absolute", top:10, right:10, padding:"4px 10px", background:"rgba(255,255,255,0.93)", backdropFilter:"blur(4px)", borderRadius:99, fontSize:10, fontWeight:600, color:"#374151" }}>{p.category.name}</div>}
-        {discountPct && discountPct>0 && <div style={{ position:"absolute", top:10, left:10, padding:"4px 9px", background:"#ef4444", borderRadius:99, fontSize:10, fontWeight:700, color:"#fff" }}>{discountPct}% OFF</div>}
-        <div style={{ position:"absolute", bottom:10, left:14, display:"flex", gap:4 }}>
-          <div style={{ width:20, height:3, borderRadius:2, background:c }}/>
-          <div style={{ width:7, height:3, borderRadius:2, background:"rgba(255,255,255,0.3)" }}/>
-          <div style={{ width:7, height:3, borderRadius:2, background:"rgba(255,255,255,0.3)" }}/>
-        </div>
-        {/* Hover overlay */}
-        {hov && (
-          <div style={{ position:"absolute", inset:0, background:`${c}22`, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
-            <button onClick={e=>{e.preventDefault();onInquiry()}} style={{ padding:"8px 14px", background:"#fff", color:c, border:`1.5px solid ${c}`, borderRadius:8, fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Enquire</button>
-            <button onClick={e=>{e.preventDefault();onAddToCart()}} style={{ padding:"8px 14px", background:c, color:"#fff", border:"none", borderRadius:8, fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit", animation:isAnimating?"cartPop 0.7s ease":"none" }}>+ Cart</button>
-          </div>
-        )}
-      </div>
-
-      {/* Info */}
-      <div style={{ padding:"14px 16px 16px", flex:1, display:"flex", flexDirection:"column" }}>
-        <h3 style={{ fontSize:14, fontWeight:700, color:"#0f172a", marginBottom:5, lineHeight:1.3, flex:1 }}>{p.name}</h3>
-        <p style={{ fontSize:12.5, color:"#64748b", lineHeight:1.55, marginBottom:12 }}>
-          {p.description?.slice(0,72)}{(p.description?.length||0)>72?"…":""}
-        </p>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-          <div>
-            {p.price
-              ? <><span style={{ fontSize:17, fontWeight:800, color:c }}>₹{p.price.toLocaleString("en-IN")}</span>
-                  {p.mrp&&p.mrp>p.price&&<span style={{ fontSize:12, color:"#94a3b8", textDecoration:"line-through", marginLeft:6 }}>₹{p.mrp.toLocaleString("en-IN")}</span>}</>
-              : <span style={{ fontSize:12.5, color:"#94a3b8", fontStyle:"italic" }}>Contact for price</span>
-            }
-          </div>
-          <div style={{ display:"flex", gap:6 }}>
-            <button onClick={e=>{e.preventDefault();onAddToCart()}} title="Add to cart" style={{ width:32, height:32, borderRadius:"50%", background:isAnimating?c:`${c}15`, border:`1.5px solid ${c}`, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", transition:"all 0.2s", animation:isAnimating?"cartPop 0.7s ease":"none" }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={isAnimating?"#fff":c} strokeWidth="2.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-            </button>
-            <Link href={`/products/${p.slug}?tenant=${tenant.slug}`} style={{ width:32, height:32, borderRadius:"50%", background:hov?c:"transparent", border:`1.5px solid ${hov?c:"rgba(0,0,0,0.15)"}`, display:"flex", alignItems:"center", justifyContent:"center", color:hov?"#fff":"#374151", fontSize:15, textDecoration:"none", transition:"all .22s" }}>→</Link>
+      {/* ── INQUIRY MODAL ── */}
+      {inquiryOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 3000, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+          <div onClick={() => setInquiryOpen(false)} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)" }} />
+          <div style={{ position: "relative", width: "100%", maxWidth: 540, background: "#fff", borderRadius: "20px 20px 0 0", padding: "28px 28px 36px", boxShadow: "0 -8px 40px rgba(0,0,0,0.15)" }} className="slide-up">
+            <div style={{ width: 40, height: 4, background: "#e5e7eb", borderRadius: 2, margin: "0 auto 24px" }} />
+            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 4 }}>
+              {selectedProduct ? `Enquire: ${selectedProduct.name}` : "Quick Enquiry"}
+            </h3>
+            <p style={{ fontSize: 14, color: "#6b7280", marginBottom: 24 }}>We'll call you back within 2 hours.</p>
+            {inquiryStatus === "sent" ? (
+              <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#15803d" }}>Enquiry Sent!</div>
+                <div style={{ fontSize: 14, color: "#6b7280", marginTop: 6 }}>Our team will contact you within 2 hours.</div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label>Name *</label>
+                    <input placeholder="Your name" value={inquiryForm.name} onChange={(e) => setInquiryForm({ ...inquiryForm, name: e.target.value })} />
+                  </div>
+                  <div>
+                    <label>Phone *</label>
+                    <input placeholder="+91 XXXXXXXXXX" value={inquiryForm.phone} onChange={(e) => setInquiryForm({ ...inquiryForm, phone: e.target.value })} />
+                  </div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label>Email</label>
+                    <input type="email" placeholder="your@email.com" value={inquiryForm.email} onChange={(e) => setInquiryForm({ ...inquiryForm, email: e.target.value })} />
+                  </div>
+                  <div>
+                    <label>Quantity</label>
+                    <input type="number" min="1" value={inquiryForm.quantity} onChange={(e) => setInquiryForm({ ...inquiryForm, quantity: e.target.value })} />
+                  </div>
+                </div>
+                <div>
+                  <label>Message</label>
+                  <textarea rows={3} placeholder="Tell us your requirements..." value={inquiryForm.message} onChange={(e) => setInquiryForm({ ...inquiryForm, message: e.target.value })} style={{ resize: "none" }} />
+                </div>
+                {inquiryStatus === "error" && <div style={{ color: "#ef4444", fontSize: 13 }}>Something went wrong. Please try again.</div>}
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button className="btn-primary" onClick={submitInquiry} disabled={inquiryStatus === "sending"} style={{ flex: 1, padding: "13px", opacity: inquiryStatus === "sending" ? 0.7 : 1 }}>
+                    {inquiryStatus === "sending" ? "Sending..." : "Send Enquiry →"}
+                  </button>
+                  <button onClick={() => setInquiryOpen(false)} style={{ padding: "13px 20px", background: "none", border: "1.5px solid #e5e7eb", borderRadius: 8, cursor: "pointer", fontSize: 15, fontWeight: 600, color: "#6b7280" }}>Cancel</button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      )}
     </div>
-  )
+  );
 }
