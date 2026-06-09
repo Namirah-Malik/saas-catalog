@@ -61,7 +61,7 @@ const HERO_SLIDES = [
     bg: "https://images.unsplash.com/photo-1497440001374-f26997328c1b?w=1600&q=80",
     eyebrow: "15+ Years of Excellence",
     headline: "Trusted by 1000+ Homes & Businesses",
-    sub: "From Hyderabad to pan-India — Satyajan Energy Solutions is your one-stop shop for inverters, batteries, solar & UPS.",
+    sub: "From Hyderabad to pan-India — your one-stop shop for inverters, batteries, solar & UPS systems.",
     cta1: "Our Products",
     cta2: "Read Reviews",
   },
@@ -174,7 +174,7 @@ const TESTIMONIALS_GOOGLE = [
     name: "Atul Ragit",
     location: "Hyderabad",
     meta: "ECE Solar · 1 review",
-    text: "Nice Service by Satyajan Energy Solution. Fast Delivery with quality products.",
+    text: "Nice Service. Fast Delivery with quality products.",
     source: "Google",
     avatar: "A",
     color: "#ef4444",
@@ -192,7 +192,7 @@ const TESTIMONIALS_GOOGLE = [
     name: "Syed Sha Kaleem",
     location: "Hyderabad",
     meta: "Local Guide · 78 reviews",
-    text: "Battery is working fine no problem since 3-4 years. Great quality product and reliable service from Satyajan.",
+    text: "Battery is working fine no problem since 3-4 years. Great quality product and reliable service.",
     source: "Google",
     avatar: "S",
     color: "#10b981",
@@ -204,7 +204,7 @@ const TESTIMONIALS_INDIAMART = [
     name: "Imran",
     location: "Hyderabad, Telangana",
     meta: "05-Jan-2026 · Verified Buyer",
-    text: "Purchased Microtek Inverter — very satisfied with the quality and prompt service by Satyajan Energy Solutions.",
+    text: "Purchased Microtek Inverter — very satisfied with the quality and prompt service.",
     source: "IndiaMART",
     avatar: "I",
     color: "#f59e0b",
@@ -240,7 +240,7 @@ const TESTIMONIALS_INDIAMART = [
     name: "Roop",
     location: "Hyderabad, Telangana",
     meta: "03-Jan-2026 · SMF Battery · Verified Buyer",
-    text: "Purchased Quanta SMF Battery — response, quality and delivery all excellent. Very happy with Satyajan's service.",
+    text: "Purchased Quanta SMF Battery — response, quality and delivery all excellent. Very happy with the service.",
     source: "IndiaMART",
     avatar: "R",
     color: "#06b6d4",
@@ -589,7 +589,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{ width: 36, height: 36, background: primary, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>⚡</div>
                 <div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: navbarBg ? "#111" : "#fff", lineHeight: 1.1 }}>{tenant?.name || "Satyajan"}</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: navbarBg ? "#111" : "#fff", lineHeight: 1.1 }}>{tenant?.name}</div>
                   <div style={{ fontSize: 10, color: primary, fontWeight: 600, letterSpacing: 1 }}>ENERGY SOLUTIONS</div>
                 </div>
               </div>
@@ -740,9 +740,9 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
         <div style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: primary, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>About Us</div>
-            <h2 style={{ fontSize: "clamp(28px,3vw,42px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 20 }}>About Satyajan Energy Solutions</h2>
+            <h2 style={{ fontSize: "clamp(28px,3vw,42px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 20 }}>About {tenant.name}</h2>
             <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.8, marginBottom: 20 }}>
-              Satyajan Energy Solutions is an authorized channel partner providing reliable power backup and solar solutions. We offer a wide range of inverters, batteries, UPS systems, and solar solutions to ensure uninterrupted power for homes and businesses.
+              {tenant.name} is an authorized channel partner providing reliable power backup and solar solutions. We offer a wide range of inverters, batteries, UPS systems, and solar solutions to ensure uninterrupted power for homes and businesses.
             </p>
             <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.8, marginBottom: 32 }}>
               With years of experience and a commitment to quality, we deliver energy-efficient and future-ready solutions. Our team provides fast delivery, expert installation, and strong after-sales support. Trusted by dealers and customers across the region.
@@ -879,7 +879,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: primary, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Why Choose Us</div>
-            <h2 style={{ fontSize: "clamp(28px,3vw,42px)", fontWeight: 800, marginBottom: 16 }}>Why Choose Satyajan Energy?</h2>
+            <h2 style={{ fontSize: "clamp(28px,3vw,42px)", fontWeight: 800, marginBottom: 16 }}>Why Choose {tenant.name}?</h2>
             <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 520, margin: "0 auto" }}>Your trusted partner for reliable power solutions with unmatched service quality.</p>
           </div>
           <div className="why-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginBottom: 64 }}>
@@ -902,7 +902,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
               <table className="comparison-table" style={{ width: "100%", borderCollapse: "collapse", background: "#fff" }}>
                 <thead>
                   <tr style={{ background: "#f8fafc" }}>
-                    {["Feature", "⚡ Satyajan Energy", "🛒 Online Platforms", "🏪 Local Sellers"].map((h, i) => (
+                    {["Feature", `⚡ ${tenant.name}`, "🛒 Online Platforms", "🏪 Local Sellers"].map((h, i) => (
                       <th key={h} style={{ padding: "14px 20px", textAlign: i === 0 ? "left" : "center", fontSize: 14, fontWeight: 700, color: i === 1 ? primary : "#374151", borderBottom: "2px solid #e5e7eb" }}>{h}</th>
                     ))}
                   </tr>
@@ -1032,7 +1032,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
             <a href="https://share.google/xEUrHKGcodkwsSfRF" target="_blank" rel="noreferrer">
               <button className="btn-outline" style={{ padding: "10px 24px", fontSize: 14 }}>View all Google Reviews →</button>
             </a>
-            <a href="https://www.indiamart.com/satyajanenergysolutions/" target="_blank" rel="noreferrer">
+            <a href="https://www.indiamart.com" target="_blank" rel="noreferrer">
               <button style={{ padding: "10px 24px", fontSize: 14, background: "#fff5eb", color: "#e8732a", border: "2px solid #e8732a", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>View all IndiaMART Reviews →</button>
             </a>
           </div>
@@ -1052,7 +1052,8 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               {[
                 { icon: "📞", label: "Phone", value: "+91 8019179159", href: "tel:+918019179159", color: "#3b82f6" },
-                { icon: "📧", label: "Email", value: "info@satyajan.com", href: "mailto:info@satyajan.com", color: "#10b981" },
+                { icon: "📞", label: "Phone", value: "+91 8019179159", href: "tel:+918019179159", color: "#3b82f6" },
+                { icon: "📧", label: "Email", value: "info@company.com", href: "mailto:info@company.com", color: "#10b981" },
                 { icon: "📍", label: "Address", value: "Plot No. 47, Green Lands Colony, Karmanghat, LB Nagar, Hyderabad 500079", href: "https://maps.app.goo.gl/vtyTimUrenngkoHn9", color: "#f59e0b" },
               ].map((item) => (
                 <a key={item.label} href={item.href} target={item.label === "Address" ? "_blank" : undefined} rel="noreferrer" style={{ textDecoration: "none" }}>
@@ -1075,8 +1076,8 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
               {/* Google Maps embed */}
               <div style={{ borderRadius: 12, overflow: "hidden", height: 180 }}>
                 <iframe
-                  title="Satyajan Location"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3806.5!2d78.5387496!3d17.3342621!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb99c0c3e1ffe7:0xa6b7d4b850493ba0!2sSatyajan%20Energy%20Solutions%20Pvt.Ltd.!5e0!3m2!1sen!2sin!4v1234567890123"
+                  title={`${tenant.name} Location`}
+                  src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3806.5!2d78.5387496!3d17.3342621!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb99c0c3e1ffe7:0xa6b7d4b850493ba0!2s${encodeURIComponent(tenant.name)}!5e0!3m2!1sen!2sin!4v1234567890123`}
                   width="100%" height="100%" style={{ border: 0 }} loading="lazy"
                 />
               </div>
@@ -1125,7 +1126,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
       <section style={{ background: `linear-gradient(135deg, ${primary} 0%, #059669 100%)`, padding: "72px 24px", textAlign: "center" }}>
         <h2 style={{ fontSize: "clamp(28px,3vw,44px)", fontWeight: 900, color: "#fff", marginBottom: 16 }}>Ready to Switch to Clean Energy?</h2>
         <p style={{ fontSize: 18, color: "rgba(255,255,255,0.88)", marginBottom: 36, maxWidth: 560, margin: "0 auto 36px" }}>
-          Join over 1000+ happy customers who have already made the switch with Satyajan Energy Solutions.
+          Join over 1000+ happy customers who have already made the switch with {tenant.name}.
         </p>
         <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
           <button className="btn-white" onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })} style={{ padding: "14px 32px", fontSize: 16 }}>Explore Products</button>
@@ -1146,7 +1147,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
                 <div style={{ width: 36, height: 36, background: primary, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>⚡</div>
                 <div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>Satyajan</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>{tenant.name}</div>
                   <div style={{ fontSize: 10, color: primary, fontWeight: 600, letterSpacing: 1 }}>ENERGY SOLUTIONS</div>
                 </div>
               </div>
@@ -1159,10 +1160,10 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
               {/* Social */}
               <div style={{ display: "flex", gap: 10 }}>
                 {[
-                  { icon: "📷", href: "https://www.instagram.com/satyajan.solutions/", label: "Instagram" },
-                  { icon: "👔", href: "https://www.linkedin.com/company/satyajan-energy-solutions-pvt-ltd/", label: "LinkedIn" },
-                  { icon: "👍", href: "https://www.facebook.com/profile.php?id=61577768371371", label: "Facebook" },
-                  { icon: "⭐", href: "https://share.google/UqkYvc7zrN2PjQBi8", label: "Google" },
+                  { icon: "📷", href: "#", label: "Instagram" },
+                  { icon: "👔", href: "#", label: "LinkedIn" },
+                  { icon: "👍", href: "#", label: "Facebook" },
+                  { icon: "⭐", href: "#", label: "Google" },
                 ].map((s) => (
                   <a key={s.label} href={s.href} target="_blank" rel="noreferrer" title={s.label}
                     style={{ width: 36, height: 36, background: "#1e293b", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", fontSize: 16, transition: "background 0.2s" }}
@@ -1223,7 +1224,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
               <h4 style={{ color: "#fff", fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Contact Us</h4>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <a href="tel:+918019179159" style={{ color: "#94a3b8", fontSize: 14, textDecoration: "none" }}>📞 +91 8019179159</a>
-                <a href="mailto:info@satyajan.com" style={{ color: "#94a3b8", fontSize: 14, textDecoration: "none" }}>📧 info@satyajan.com</a>
+                <span style={{ color: "#94a3b8", fontSize: 14 }}>📧 info@company.com</span>
                 <span style={{ color: "#94a3b8", fontSize: 14 }}>📍 Hyderabad, Telangana, India</span>
               </div>
             </div>
@@ -1231,7 +1232,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
 
           {/* Bottom bar */}
           <div style={{ borderTop: "1px solid #1e293b", paddingTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
-            <div style={{ fontSize: 13, color: "#64748b" }}>© 2025 Satyajan Energy Solutions Pvt Ltd. All rights reserved.</div>
+            <div style={{ fontSize: 13, color: "#64748b" }}>© 2025 {tenant.name}. All rights reserved.</div>
             <div style={{ display: "flex", gap: 20 }}>
               {["Terms of Service", "Privacy Policy", "Cancellation & Refund", "Contact Us"].map((link) => (
                 <a key={link} href="#" style={{ fontSize: 13, color: "#64748b", textDecoration: "none", transition: "color 0.2s" }}
