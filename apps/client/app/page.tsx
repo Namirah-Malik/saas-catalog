@@ -66,7 +66,6 @@ export default async function HomePage({
     price: p.price ?? undefined,
     images: p.images ?? undefined,
     specifications: p.specifications as Record<string, string> ?? undefined,
-    features: p.features ?? undefined,
     category: p.category ? { name: p.category.name } : undefined,
   }))}
 />

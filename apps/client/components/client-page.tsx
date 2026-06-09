@@ -11,7 +11,6 @@ interface Product {
   price?: number;
   images?: string[];
   specifications?: Record<string, string>;
-  features?: string[];
   category?: { name: string };
 }
 
