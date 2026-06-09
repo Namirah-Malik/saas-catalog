@@ -54,26 +54,21 @@ export default async function HomePage({
         id: tenant.id,
         name: tenant.name,
         slug: tenant.slug,
-        primaryColor: tenant.primaryColor,
-        logo: tenant.logo,
+          primaryColor: tenant.primaryColor ?? undefined,
+            logo: tenant.logo ?? undefined,
+
       }}
-      products={products.map(p => ({
-        id: p.id,
-        name: p.name,
-        slug: p.slug,
-        description: p.description,
-        price: p.price,
-        images: p.images,
-        isVisible: p.isVisible,
-        category: p.category
-          ? { name: p.category.name, slug: p.category.slug }
-          : null,
-      }))}
-      categories={tenant.categories.map(c => ({
-        id: c.id,
-        name: c.name,
-        slug: c.slug,
-      }))}
-    />
+     products={products.map(p => ({
+    id: p.id,
+    name: p.name,
+    slug: p.slug,
+    description: p.description ?? undefined,
+    price: p.price ?? undefined,
+    images: p.images ?? undefined,
+    specifications: p.specifications as Record<string, string> ?? undefined,
+    features: p.features ?? undefined,
+    category: p.category ? { name: p.category.name } : undefined,
+  }))}
+/>
   )
 }
