@@ -774,9 +774,9 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
 
       {/* ── ABOUT SECTION ── */}
       <section style={{ padding: "80px 24px", background: "#f8fafc" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}/>
           <div className="about-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
-          <div>
+            <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: primary, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>About Us</div>
             <h2 style={{ fontSize: "clamp(28px,3vw,42px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 20 }}>About {tenant.name}</h2>
             <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.8, marginBottom: 20 }}>
@@ -801,7 +801,8 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
               <span style={{ background: "#eff6ff", color: "#1d4ed8", padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>✓ Cash & UPI Accepted</span>
             </div>
           </div>
-          <div className="about-image" style={{ position: "relative" }}> style={{ width: "100%", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }} />
+          <div className="about-image" style={{ position: "relative" }}>
+            <img src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=700&q=80" alt="Battery Service" style={{ width: "100%", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }} />
             <div style={{ position: "absolute", bottom: -24, left: -24, background: primary, color: "#fff", borderRadius: 12, padding: "16px 20px", boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>
               <div style={{ fontSize: 28, fontWeight: 900 }}>500+</div>
               <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.9 }}>Happy Customers</div>
