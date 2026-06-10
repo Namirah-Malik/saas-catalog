@@ -553,22 +553,50 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
         label{font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px}
         .comparison-check{color:${primary};font-weight:700;font-size:16px}
         .comparison-x{color:#9ca3af;font-size:14px}
-        @media(max-width:768px){
-          .hero-btns{flex-direction:column;gap:10px}
-          .hero-stats{flex-direction:column;gap:16px}
+        /* ── Desktop nav & phone visible only on desktop ── */
+        .desktop-nav{display:flex}
+        .desktop-phone{display:flex}
+        .mobile-menu-btn{display:none!important}
+        /* ── Tablet ── */
+        @media(max-width:900px){
+          .desktop-nav{display:none!important}
+          .desktop-phone{display:none!important}
+          .mobile-menu-btn{display:flex!important}
+          .hero-btns{flex-direction:row;gap:10px;flex-wrap:wrap}
+          .hero-stats{flex-direction:row;gap:24px;flex-wrap:wrap}
           .why-grid{grid-template-columns:1fr 1fr!important}
           .products-grid{grid-template-columns:1fr 1fr!important}
           .footer-grid{grid-template-columns:1fr 1fr!important}
           .comparison-table{font-size:12px}
-          .projects-grid{grid-template-columns:1fr!important}
+          .projects-grid{grid-template-columns:1fr 1fr!important}
           .categories-grid{grid-template-columns:1fr 1fr!important}
           .contact-grid{grid-template-columns:1fr!important}
+          .about-grid{grid-template-columns:1fr!important}
         }
-        @media(max-width:480px){
-          .why-grid{grid-template-columns:1fr!important}
+        /* ── Mobile ── */
+        @media(max-width:600px){
+          .desktop-nav{display:none!important}
+          .desktop-phone{display:none!important}
+          .mobile-menu-btn{display:flex!important}
+          .hero-btns{flex-direction:column;gap:10px;width:100%}
+          .hero-btns button,.hero-btns a button{width:100%}
+          .hero-stats{flex-direction:row;gap:20px;flex-wrap:wrap}
+          .why-grid{grid-template-columns:1fr 1fr!important}
+          .products-grid{grid-template-columns:1fr 1fr!important}
+          .footer-grid{grid-template-columns:1fr 1fr!important}
+          .comparison-table{font-size:11px}
+          .projects-grid{grid-template-columns:1fr!important}
           .categories-grid{grid-template-columns:1fr!important}
-          .footer-grid{grid-template-columns:1fr!important}
+          .contact-grid{grid-template-columns:1fr!important}
+          .about-grid{grid-template-columns:1fr!important}
+          .about-image{display:none!important}
+          .nav-logo-text{font-size:13px!important;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+          .nav-logo-sub{display:none!important}
+        }
+        @media(max-width:400px){
+          .why-grid{grid-template-columns:1fr!important}
           .products-grid{grid-template-columns:1fr!important}
+          .footer-grid{grid-template-columns:1fr!important}
         }
       `}</style>
 
@@ -578,28 +606,29 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
         background: navbarBg ? "#fff" : "transparent",
         boxShadow: navbarBg ? "0 2px 20px rgba(0,0,0,0.08)" : "none",
         transition: "all 0.3s ease",
-        padding: "0 24px",
+        padding: "0 16px",
       }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", height: 68, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          
           {/* Logo */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, minWidth: 0, maxWidth: "50%" }}>
             {tenant?.logo ? (
-              <img src={tenant.logo} alt={tenant.name} style={{ height: 40, objectFit: "contain" }} />
+              <img src={tenant.logo} alt={tenant.name} style={{ height: 36, objectFit: "contain" }} />
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 36, height: 36, background: primary, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>⚡</div>
-                <div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: navbarBg ? "#111" : "#fff", lineHeight: 1.1 }}>{tenant?.name}</div>
-                  <div style={{ fontSize: 10, color: primary, fontWeight: 600, letterSpacing: 1 }}>ENERGY SOLUTIONS</div>
+                <div style={{ width: 32, height: 32, background: primary, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>⚡</div>
+                <div style={{ minWidth: 0 }}>
+                  <div className="nav-logo-text" style={{ fontSize: 14, fontWeight: 800, color: navbarBg ? "#111" : "#fff", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 180 }}>{tenant?.name}</div>
+                  <div className="nav-logo-sub" style={{ fontSize: 9, color: primary, fontWeight: 600, letterSpacing: 1, whiteSpace: "nowrap" }}>BATTERY SERVICE</div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Desktop nav */}
-          <div style={{ display: "flex", alignItems: "center", gap: 28, fontSize: 14, fontWeight: 500 }}>
+          {/* Desktop nav — hidden on mobile via CSS */}
+          <div className="desktop-nav" style={{ alignItems: "center", gap: 24, fontSize: 14, fontWeight: 500 }}>
             {["Products", "Categories", "Projects", "Reviews", "Contact"].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} style={{ color: navbarBg ? "#374151" : "rgba(255,255,255,0.9)", textDecoration: "none", transition: "color 0.2s" }}
+              <a key={item} href={`#${item.toLowerCase()}`} style={{ color: navbarBg ? "#374151" : "rgba(255,255,255,0.9)", textDecoration: "none", transition: "color 0.2s", whiteSpace: "nowrap" }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
                 onMouseLeave={(e) => (e.currentTarget.style.color = navbarBg ? "#374151" : "rgba(255,255,255,0.9)")}>
                 {item}
@@ -608,11 +637,11 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
           </div>
 
           {/* Right controls */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             {/* Search */}
             <button onClick={() => setSearchOpen(!searchOpen)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: navbarBg ? "#374151" : "#fff", padding: 6, borderRadius: 8 }}>🔍</button>
-            {/* Phone */}
-            <a href="tel:+918143455418" style={{ display: "flex", alignItems: "center", gap: 6, color: navbarBg ? "#374151" : "#fff", textDecoration: "none", fontSize: 13, fontWeight: 600 }}>
+            {/* Phone — desktop only */}
+            <a className="desktop-phone" href="tel:+918143455418" style={{ alignItems: "center", gap: 6, color: navbarBg ? "#374151" : "#fff", textDecoration: "none", fontSize: 13, fontWeight: 600, whiteSpace: "nowrap" }}>
               <span>📞</span> +91 8143455418
             </a>
             {/* Cart */}
@@ -622,14 +651,17 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
                 <span style={{ position: "absolute", top: 0, right: 0, background: primary, color: "#fff", borderRadius: "50%", width: 18, height: 18, fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>{cartCount}</span>
               )}
             </button>
-            {/* Mobile menu */}
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: navbarBg ? "#374151" : "#fff", display: "none" }} className="mobile-menu-btn">☰</button>
+            {/* Hamburger — mobile only, shown via CSS */}
+            <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: 24, color: navbarBg ? "#374151" : "#fff", padding: "4px 6px", lineHeight: 1 }}>
+              {mobileMenuOpen ? "✕" : "☰"}
+            </button>
           </div>
         </div>
 
         {/* Search bar */}
         {searchOpen && (
-          <div style={{ background: "#fff", padding: "12px 24px", borderTop: "1px solid #f0f0f0" }}>
+          <div style={{ background: "#fff", padding: "12px 16px", borderTop: "1px solid #f0f0f0" }}>
             <div style={{ maxWidth: 600, margin: "0 auto", position: "relative" }}>
               <input
                 autoFocus
@@ -646,19 +678,24 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
           </div>
         )}
 
-        {/* Mobile menu */}
+        {/* Mobile menu dropdown */}
         {mobileMenuOpen && (
-          <div style={{ background: "#fff", padding: "16px 24px", borderTop: "1px solid #f0f0f0", display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ background: "#fff", padding: "16px", borderTop: "1px solid #f0f0f0", display: "flex", flexDirection: "column", gap: 0, boxShadow: "0 8px 24px rgba(0,0,0,0.1)" }}>
             {["Products", "Categories", "Projects", "Reviews", "Contact"].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setMobileMenuOpen(false)} style={{ color: "#374151", textDecoration: "none", fontWeight: 600, fontSize: 15 }}>{item}</a>
+              <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setMobileMenuOpen(false)}
+                style={{ color: "#374151", textDecoration: "none", fontWeight: 600, fontSize: 15, padding: "12px 0", borderBottom: "1px solid #f3f4f6", display: "block" }}>
+                {item}
+              </a>
             ))}
-            <a href="tel:+918143455418" style={{ color: primary, fontWeight: 700, textDecoration: "none" }}>📞 +91 8143455418</a>
+            <a href="tel:+918143455418" style={{ color: primary, fontWeight: 700, textDecoration: "none", padding: "12px 0", fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>
+              📞 +91 8143455418
+            </a>
           </div>
         )}
       </nav>
 
       {/* ── HERO SLIDER ── */}
-      <section style={{ position: "relative", height: "100vh", minHeight: 600, overflow: "hidden" }}>
+      <section style={{ position: "relative", height: "100vh", minHeight: 580, overflow: "hidden" }}>
         {HERO_SLIDES.map((s, i) => (
           <div key={i} style={{
             position: "absolute", inset: 0,
@@ -667,37 +704,37 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
             transition: "opacity 0.8s ease",
             zIndex: i === heroIdx ? 1 : 0,
           }}>
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.2) 100%)" }} />
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.25) 100%)" }} />
           </div>
         ))}
-        <div style={{ position: "relative", zIndex: 2, height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 32px", maxWidth: 1280, margin: "0 auto" }}>
+        <div style={{ position: "relative", zIndex: 2, height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "80px 20px 40px", maxWidth: 1280, margin: "0 auto", width: "100%" }}>
           <div key={heroIdx} className="fade-in">
-            <div style={{ display: "inline-block", background: primary, color: "#fff", fontSize: 12, fontWeight: 700, letterSpacing: 2, padding: "6px 14px", borderRadius: 20, marginBottom: 20, textTransform: "uppercase" }}>
+            <div style={{ display: "inline-block", background: primary, color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: 2, padding: "5px 12px", borderRadius: 20, marginBottom: 16, textTransform: "uppercase" }}>
               {slide.eyebrow}
             </div>
-            <h1 style={{ fontSize: "clamp(32px,5vw,64px)", fontWeight: 900, color: "#fff", lineHeight: 1.1, marginBottom: 20, maxWidth: 720, textShadow: "0 2px 20px rgba(0,0,0,0.3)" }}>
+            <h1 style={{ fontSize: "clamp(26px,5vw,64px)", fontWeight: 900, color: "#fff", lineHeight: 1.15, marginBottom: 16, maxWidth: 720, textShadow: "0 2px 20px rgba(0,0,0,0.3)" }}>
               {slide.headline}
             </h1>
-            <p style={{ fontSize: "clamp(15px,2vw,18px)", color: "rgba(255,255,255,0.88)", maxWidth: 560, lineHeight: 1.7, marginBottom: 36 }}>
+            <p style={{ fontSize: "clamp(14px,2vw,17px)", color: "rgba(255,255,255,0.88)", maxWidth: 520, lineHeight: 1.7, marginBottom: 28 }}>
               {slide.sub}
             </p>
-            <div className="hero-btns" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 48 }}>
-              <button className="btn-primary" onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })} style={{ padding: "14px 32px", fontSize: 16 }}>
+            <div className="hero-btns" style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 36 }}>
+              <button className="btn-primary" onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })} style={{ padding: "13px 28px", fontSize: 15 }}>
                 {slide.cta1} →
               </button>
-              <button className="btn-white" onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })} style={{ padding: "14px 32px", fontSize: 16 }}>
+              <button className="btn-white" onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })} style={{ padding: "13px 28px", fontSize: 15 }}>
                 {slide.cta2}
               </button>
             </div>
-            <div ref={statsRef} className="hero-stats" style={{ display: "flex", gap: 40 }}>
+            <div ref={statsRef} className="hero-stats" style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
               {[
                 { num: `${count1}+`, label: "Happy Customers" },
                 { num: `${count2}+`, label: "Brands Stocked" },
                 { num: `${count3}%`, label: "Repeat Customers" },
               ].map((s) => (
                 <div key={s.label}>
-                  <div style={{ fontSize: 32, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{s.num}</div>
-                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", fontWeight: 500, marginTop: 4 }}>{s.label}</div>
+                  <div style={{ fontSize: 28, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{s.num}</div>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", fontWeight: 500, marginTop: 4 }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -737,7 +774,8 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
 
       {/* ── ABOUT SECTION ── */}
       <section style={{ padding: "80px 24px", background: "#f8fafc" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <div className="about-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: primary, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>About Us</div>
             <h2 style={{ fontSize: "clamp(28px,3vw,42px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 20 }}>About {tenant.name}</h2>
@@ -763,8 +801,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
               <span style={{ background: "#eff6ff", color: "#1d4ed8", padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>✓ Cash & UPI Accepted</span>
             </div>
           </div>
-          <div style={{ position: "relative" }}>
-            <img src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=700&q=80" alt="Battery Service" style={{ width: "100%", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }} />
+          <div className="about-image" style={{ position: "relative" }}> style={{ width: "100%", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }} />
             <div style={{ position: "absolute", bottom: -24, left: -24, background: primary, color: "#fff", borderRadius: 12, padding: "16px 20px", boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>
               <div style={{ fontSize: 28, fontWeight: 900 }}>500+</div>
               <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.9 }}>Happy Customers</div>
