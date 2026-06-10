@@ -35,88 +35,88 @@ interface ClientPageProps {
 const HERO_SLIDES = [
   {
     bg: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1600&q=80",
-    eyebrow: "Authorized Microtek Partner",
-    headline: "Power Your Future with Clean Solar Energy",
-    sub: "Save up to 80% on electricity bills. 30-year warranty. Easy EMI options. Join 1000+ satisfied customers across India.",
+    eyebrow: "Secunderabad's Trusted Battery Shop",
+    headline: "Reliable Inverter & Battery Solutions for Your Home",
+    sub: "Get the right battery for your inverter — expert advice, genuine products, fast installation. Serving Secunderabad & Hyderabad since years.",
     cta1: "Explore Products",
-    cta2: "Get Free Consultation",
+    cta2: "Call Us Now",
   },
   {
     bg: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=1600&q=80",
-    eyebrow: "Reliable Power Backup",
-    headline: "Never Face a Powercut Again",
-    sub: "From home inverters to industrial UPS systems — we deliver uninterrupted power for every need, every load, every hour.",
-    cta1: "View Inverters",
-    cta2: "Calculate Your Load",
+    eyebrow: "Never Face a Powercut Again",
+    headline: "Quality Inverter Batteries at Wholesale Prices",
+    sub: "From 80Ah flat plate to 220Ah tall tubular — all leading brands available. Expert staff guides you to the right choice every time.",
+    cta1: "View Batteries",
+    cta2: "Get Expert Advice",
   },
   {
     bg: "https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=1600&q=80",
-    eyebrow: "Premium Tubular Batteries",
+    eyebrow: "Tubular & Lithium Batteries",
     headline: "Long-Lasting Backup You Can Count On",
-    sub: "Microtek tubular batteries with 36–60 month warranty. Compatible with all inverter brands. Pan-India delivery available.",
+    sub: "Tubular batteries with 36–60 month warranty. Compatible with all inverter brands. Convenient location in Annojiguda, Secunderabad.",
     cta1: "Shop Batteries",
     cta2: "Talk to Expert",
   },
   {
     bg: "https://images.unsplash.com/photo-1497440001374-f26997328c1b?w=1600&q=80",
-    eyebrow: "15+ Years of Excellence",
-    headline: "Trusted by 1000+ Homes & Businesses",
-    sub: "From Hyderabad to pan-India — your one-stop shop for inverters, batteries, solar & UPS systems.",
+    eyebrow: "Expert Battery Service",
+    headline: "Trusted by Homes & Businesses in Secunderabad",
+    sub: "From Annojiguda to all of Hyderabad — your neighbourhood one-stop shop for inverters, batteries, UPS systems and expert service.",
     cta1: "Our Products",
-    cta2: "Read Reviews",
+    cta2: "Get Directions",
   },
 ];
 
 const MARQUEE_ITEMS = [
-  "Solar Panel Installation",
+  "Tubular Battery Sales",
   "Battery Replacement",
   "Inverter Setup & Repair",
-  "Free Consultation",
-  "24/7 Support",
-  "Easy EMI Options",
-  "Pan-India Delivery",
-  "Free Installation",
-  "Microtek Authorized Partner",
+  "Free Expert Guidance",
+  "Same-Day Service",
+  "Cash & UPI Accepted",
+  "Parking Available",
+  "Battery Testing Free",
+  "All Leading Brands",
   "Lithium Battery Upgrade",
   "Online UPS Solutions",
-  "Warranty Claim Support",
+  "Warranty Support",
 ];
 
 const WHY_CARDS = [
   {
-    icon: "🛡️",
-    title: "Authorized Channel Partner",
-    desc: "Official partner ensuring genuine products with full manufacturer warranty and support.",
+    icon: "📍",
+    title: "Prime Location",
+    desc: "Conveniently located in Annojiguda, Secunderabad — easy access from all parts of the city.",
     color: "#10b981",
   },
   {
-    icon: "🏆",
-    title: "15+ Years of Excellence",
-    desc: "Proven track record of delivering reliable power solutions across India with an expert technical team.",
+    icon: "🧑‍🔧",
+    title: "Expert Staff",
+    desc: "Dedicated and knowledgeable team committed to giving you the best guidance for your power needs.",
     color: "#3b82f6",
   },
   {
     icon: "🎧",
     title: "24/7 Customer Support",
-    desc: "Dedicated support team available round the clock for installation, maintenance, and troubleshooting.",
+    desc: "Dedicated support team available for installation, maintenance, and troubleshooting queries.",
     color: "#f59e0b",
   },
   {
     icon: "💰",
     title: "Best Price Guarantee",
-    desc: "Competitive pricing with flexible payment options and special discounts for bulk orders.",
+    desc: "Wholesale and competitive pricing with flexible payment options including cash accepted.",
     color: "#8b5cf6",
   },
   {
-    icon: "🚚",
-    title: "Pan-India Delivery",
-    desc: "Fast and reliable delivery to 500+ locations with professional installation services.",
+    icon: "🅿️",
+    title: "Parking Available",
+    desc: "Convenient parking space available for all customers visiting our store.",
     color: "#ef4444",
   },
   {
     icon: "🔧",
-    title: "Free Installation & Training",
-    desc: "Complimentary installation by certified technicians with comprehensive product training.",
+    title: "Installation & Service",
+    desc: "Quick and professional battery installation with comprehensive after-sales support.",
     color: "#06b6d4",
   },
 ];
@@ -249,97 +249,97 @@ const TESTIMONIALS_INDIAMART = [
 
 const PROJECTS = [
   {
-    title: "Microtek iMAXX Online UPS with Battery Bank",
-    location: "Hyderabad, Telangana",
-    spec: "100 kVA Online UPS",
-    category: "Online UPS",
-    desc: "Installed a Microtek iMAXX 100kVA online UPS with a 32-battery Exide Powersafe SMF bank for a commercial office requiring zero-downtime power.",
-    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
-  },
-  {
     title: "Home Inverter + Tall Tubular Battery",
-    location: "Hyderabad, Telangana",
+    location: "Annojiguda, Secunderabad",
     spec: "1250VA / 150Ah",
     category: "Home Inverter",
-    desc: "Installed a Microtek Heavy Duty inverter with tall tubular battery — providing 6+ hours backup for fans, lights, TV and essential appliances.",
+    desc: "Installed a heavy duty inverter with tall tubular battery — providing 6+ hours backup for fans, lights, TV and essential appliances.",
     img: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&q=80",
   },
   {
-    title: "School Classroom Power Backup",
-    location: "Hyderabad, Telangana",
-    spec: "900VA / 150Ah",
-    category: "Educational",
-    desc: "Deployed Microtek inverter + tall tubular battery for a school classroom, ensuring uninterrupted power for fans, lights and smart board.",
-    img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=80",
-  },
-  {
-    title: "Solar PCU + Tall Tubular Battery System",
-    location: "Hyderabad, Telangana",
-    spec: "1kW Solar + 200Ah Storage",
-    category: "Solar + Battery",
-    desc: "Installed Microtek Solar PCU with 2× tall tubular batteries — enabling home to run on solar power during the day and stored energy at night.",
-    img: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&q=80",
-  },
-  {
-    title: "Microtek Inverter with BIG POWERR Battery",
-    location: "Hyderabad, Telangana",
-    spec: "1250VA / 180Ah",
-    category: "Home Inverter",
-    desc: "Complete home power backup with Microtek Heavy Duty inverter and BIG POWERR 180Ah tubular battery — 8+ hours backup for a 3 BHK apartment.",
+    title: "Office UPS + SMF Battery Bank",
+    location: "Secunderabad, Telangana",
+    spec: "5kVA / 150Ah x4",
+    category: "Online UPS",
+    desc: "Installed an Online UPS with 4-battery SMF bank for a commercial office in Secunderabad requiring zero-downtime power backup.",
     img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
   },
   {
-    title: "Microtek LUXE Inverter + Lithium-Ion Battery",
+    title: "Flat Plate Battery Replacement",
+    location: "Hyderabad, Telangana",
+    spec: "150Ah / 24-month warranty",
+    category: "Battery Replacement",
+    desc: "Quick same-day battery replacement for a residential customer — old battery tested, new flat plate battery installed and inverter checked.",
+    img: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&q=80",
+  },
+  {
+    title: "Tall Tubular Upgrade",
+    location: "Secunderabad, Telangana",
+    spec: "1250VA / 180Ah",
+    category: "Battery Upgrade",
+    desc: "Upgraded customer from flat plate to tall tubular battery — significantly increasing backup time from 3 hours to 7+ hours.",
+    img: "https://images.unsplash.com/photo-1497440001374-f26997328c1b?w=600&q=80",
+  },
+  {
+    title: "School Classroom Backup",
+    location: "Secunderabad, Telangana",
+    spec: "900VA / 150Ah",
+    category: "Educational",
+    desc: "Installed inverter + tall tubular battery for a school classroom, ensuring uninterrupted power for fans, lights and smart board.",
+    img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=80",
+  },
+  {
+    title: "Lithium Battery Upgrade",
     location: "Hyderabad, Telangana",
     spec: "1100VA / 100Ah LFP",
     category: "Lithium Battery",
-    desc: "Upgraded from conventional tubular battery to Microtek LFP Lithium-Ion — 3500+ cycles, maintenance-free, 5× faster charging.",
+    desc: "Upgraded from conventional tubular battery to Lithium-Ion — 3500+ cycles, maintenance-free, 5× faster charging.",
     img: "https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=600&q=80",
   },
 ];
 
 const PRODUCT_CATEGORIES = [
   {
-    name: "Solar Solutions",
-    icon: "☀️",
-    desc: "High-efficiency solar panels with 25+ year warranty. Complete on-grid and off-grid solutions.",
-    features: ["25+ year panel warranty", "Govt. subsidy assistance", "On-grid & off-grid options"],
-    img: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&q=80",
-  },
-  {
-    name: "Inverter / Home UPS",
-    icon: "⚡",
-    desc: "Pure sine wave inverters with intelligent battery management. Capacity from 700VA to 2000VA.",
-    features: ["Pure sine wave output", "700VA to 2000VA range", "Smart battery charging"],
-    img: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&q=80",
-  },
-  {
-    name: "Jumbo UPS",
+    name: "Tubular Batteries",
     icon: "🔋",
-    desc: "High capacity 2KVA to 10KVA for extended backup. Perfect for offices, shops, and large homes.",
-    features: ["2KVA to 10KVA capacity", "Overload protection", "Office & commercial grade"],
-    img: "https://images.unsplash.com/photo-1497440001374-f26997328c1b?w=600&q=80",
-  },
-  {
-    name: "Online UPS",
-    icon: "🖥️",
-    desc: "Wide range from 1KVA to 120KVA. True online double conversion for zero transfer time.",
-    features: ["1KVA to 120KVA range", "Zero transfer time", "For servers & data centers"],
-    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
-  },
-  {
-    name: "Tubular Battery",
-    icon: "🔌",
-    desc: "Long-lasting tubular inverter batteries from 80Ah to 220Ah. 36–60 month warranty.",
+    desc: "Long-lasting tubular inverter batteries from 80Ah to 220Ah with 36–60 month warranty.",
     features: ["36–60 month warranty", "80Ah to 220Ah range", "All inverter compatible"],
     img: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&q=80",
   },
   {
+    name: "Inverter / Home UPS",
+    icon: "⚡",
+    desc: "Pure sine wave home inverters with intelligent battery management. Capacity from 700VA to 2000VA.",
+    features: ["Pure sine wave output", "700VA to 2000VA range", "Smart battery charging"],
+    img: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&q=80",
+  },
+  {
+    name: "Flat Plate Batteries",
+    icon: "🔌",
+    desc: "Affordable flat plate batteries for light backup needs. Ideal for fans, lights and small appliances.",
+    features: ["Budget-friendly option", "Low maintenance", "Compact & lightweight"],
+    img: "https://images.unsplash.com/photo-1497440001374-f26997328c1b?w=600&q=80",
+  },
+  {
     name: "Lithium Batteries",
     icon: "🌱",
-    desc: "Advanced lithium-ion with 10+ year lifespan, 3000+ charge cycles, maintenance-free.",
+    desc: "Advanced lithium-ion batteries with 10+ year lifespan, 3000+ charge cycles, maintenance-free.",
     features: ["10+ years lifespan", "3000+ charge cycles", "Built-in BMS system"],
     img: "https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=600&q=80",
+  },
+  {
+    name: "Online UPS",
+    icon: "🖥️",
+    desc: "For offices, shops and businesses requiring uninterrupted power with zero transfer time.",
+    features: ["Zero transfer time", "For offices & shops", "Wide range available"],
+    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+  },
+  {
+    name: "Battery Service & Repair",
+    icon: "🔧",
+    desc: "Professional battery testing, servicing, water topping, and repair by expert technicians.",
+    features: ["Expert diagnosis", "Quick turnaround", "Genuine parts used"],
+    img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=80",
   },
 ];
 
@@ -429,9 +429,9 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
         else setter(Math.floor(current));
       }, 16);
     };
-    animate(setCount1, 1000);
-    animate(setCount2, 15);
-    animate(setCount3, 80);
+    animate(setCount1, 500);
+    animate(setCount2, 10);
+    animate(setCount3, 90);
   }, [statsVisible]);
 
   // Cart persistence
@@ -612,8 +612,8 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
             {/* Search */}
             <button onClick={() => setSearchOpen(!searchOpen)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: navbarBg ? "#374151" : "#fff", padding: 6, borderRadius: 8 }}>🔍</button>
             {/* Phone */}
-            <a href="tel:+918019179159" style={{ display: "flex", alignItems: "center", gap: 6, color: navbarBg ? "#374151" : "#fff", textDecoration: "none", fontSize: 13, fontWeight: 600 }}>
-              <span>📞</span> +91 8019179159
+            <a href="tel:+918143455418" style={{ display: "flex", alignItems: "center", gap: 6, color: navbarBg ? "#374151" : "#fff", textDecoration: "none", fontSize: 13, fontWeight: 600 }}>
+              <span>📞</span> +91 8143455418
             </a>
             {/* Cart */}
             <button onClick={() => setCartOpen(true)} style={{ position: "relative", background: "none", border: "none", cursor: "pointer", fontSize: 20, color: navbarBg ? "#374151" : "#fff", padding: 6 }}>
@@ -652,7 +652,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
             {["Products", "Categories", "Projects", "Reviews", "Contact"].map((item) => (
               <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setMobileMenuOpen(false)} style={{ color: "#374151", textDecoration: "none", fontWeight: 600, fontSize: 15 }}>{item}</a>
             ))}
-            <a href="tel:+918019179159" style={{ color: primary, fontWeight: 700, textDecoration: "none" }}>📞 +91 8019179159</a>
+            <a href="tel:+918143455418" style={{ color: primary, fontWeight: 700, textDecoration: "none" }}>📞 +91 8143455418</a>
           </div>
         )}
       </nav>
@@ -692,8 +692,8 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
             <div ref={statsRef} className="hero-stats" style={{ display: "flex", gap: 40 }}>
               {[
                 { num: `${count1}+`, label: "Happy Customers" },
-                { num: `${count2}+`, label: "Years Experience" },
-                { num: `${count3}%`, label: "Bill Savings" },
+                { num: `${count2}+`, label: "Brands Stocked" },
+                { num: `${count3}%`, label: "Repeat Customers" },
               ].map((s) => (
                 <div key={s.label}>
                   <div style={{ fontSize: 32, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{s.num}</div>
@@ -742,10 +742,10 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
             <div style={{ fontSize: 13, fontWeight: 700, color: primary, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>About Us</div>
             <h2 style={{ fontSize: "clamp(28px,3vw,42px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 20 }}>About {tenant.name}</h2>
             <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.8, marginBottom: 20 }}>
-              {tenant.name} is an authorized channel partner providing reliable power backup and solar solutions. We offer a wide range of inverters, batteries, UPS systems, and solar solutions to ensure uninterrupted power for homes and businesses.
+              {tenant.name} is a trusted inverter battery shop located in Annojiguda, Secunderabad. We offer a wide range of inverter batteries, UPS systems, and power backup solutions to ensure uninterrupted power for homes and businesses.
             </p>
             <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.8, marginBottom: 32 }}>
-              With years of experience and a commitment to quality, we deliver energy-efficient and future-ready solutions. Our team provides fast delivery, expert installation, and strong after-sales support. Trusted by dealers and customers across the region.
+              With years of experience and a commitment to quality, we stock all leading brands and provide expert guidance to help you choose the right battery for your needs. Our team offers fast same-day service, proper installation, and dedicated after-sales support. Trusted by hundreds of customers across Secunderabad and Hyderabad.
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 32 }}>
               {[{ icon: "🎯", title: "Our Mission", desc: "Reliable, sustainable energy solutions for homes and businesses across India." },
@@ -759,14 +759,14 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
               ))}
             </div>
             <div style={{ display: "flex", gap: 12 }}>
-              <span style={{ background: "#f0fdf4", color: "#15803d", padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>✓ GST: 36ABGCS0416A1ZX</span>
-              <span style={{ background: "#eff6ff", color: "#1d4ed8", padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>✓ Authorized Microtek Partner</span>
+              <span style={{ background: "#f0fdf4", color: "#15803d", padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>✓ Open from 10 AM daily</span>
+              <span style={{ background: "#eff6ff", color: "#1d4ed8", padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>✓ Cash & UPI Accepted</span>
             </div>
           </div>
           <div style={{ position: "relative" }}>
-            <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=700&q=80" alt="Solar Energy" style={{ width: "100%", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }} />
+            <img src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=700&q=80" alt="Battery Service" style={{ width: "100%", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }} />
             <div style={{ position: "absolute", bottom: -24, left: -24, background: primary, color: "#fff", borderRadius: 12, padding: "16px 20px", boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>
-              <div style={{ fontSize: 28, fontWeight: 900 }}>1000+</div>
+              <div style={{ fontSize: 28, fontWeight: 900 }}>500+</div>
               <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.9 }}>Happy Customers</div>
             </div>
             <div style={{ position: "absolute", top: -16, right: -16, background: "#fff", borderRadius: 12, padding: "12px 16px", boxShadow: "0 8px 24px rgba(0,0,0,0.1)" }}>
@@ -880,7 +880,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: primary, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Why Choose Us</div>
             <h2 style={{ fontSize: "clamp(28px,3vw,42px)", fontWeight: 800, marginBottom: 16 }}>Why Choose {tenant.name}?</h2>
-            <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 520, margin: "0 auto" }}>Your trusted partner for reliable power solutions with unmatched service quality.</p>
+            <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 520, margin: "0 auto" }}>Your neighbourhood inverter battery shop in Secunderabad — genuine products, expert advice, fast service.</p>
           </div>
           <div className="why-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginBottom: 64 }}>
             {WHY_CARDS.map((card) => (
@@ -896,8 +896,8 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
 
           {/* Comparison Table */}
           <div>
-            <h3 style={{ fontSize: 22, fontWeight: 800, textAlign: "center", marginBottom: 8 }}>More Than Just a Product — We're Your Energy Partner</h3>
-            <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 32, fontSize: 15 }}>We go beyond selling. From recommendation to installation and warranty support — we're with you every step.</p>
+            <h3 style={{ fontSize: 22, fontWeight: 800, textAlign: "center", marginBottom: 8 }}>More Than Just a Shop — We're Your Battery Partner</h3>
+            <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 32, fontSize: 15 }}>We go beyond selling. From choosing the right battery to installation and warranty support — we're with you every step.</p>
             <div style={{ overflowX: "auto", borderRadius: 12, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
               <table className="comparison-table" style={{ width: "100%", borderCollapse: "collapse", background: "#fff" }}>
                 <thead>
@@ -924,7 +924,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
               </table>
             </div>
             <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 28 }}>
-              <a href="https://wa.me/918019179159?text=Hi, I want expert guidance before buying" target="_blank" rel="noreferrer">
+              <a href="https://wa.me/918143455418?text=Hi, I want expert guidance before buying" target="_blank" rel="noreferrer">
                 <button className="btn-primary" style={{ padding: "13px 28px" }}>Get Expert Advice — Free 💬</button>
               </a>
               <button className="btn-outline" onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })} style={{ padding: "13px 28px" }}>Browse Products</button>
@@ -940,14 +940,14 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
         <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center", position: "relative", zIndex: 1 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: primary, letterSpacing: 3, textTransform: "uppercase", marginBottom: 16 }}>Power Backup Solutions</div>
           <h2 style={{ fontSize: "clamp(28px,3.5vw,48px)", fontWeight: 900, color: "#fff", marginBottom: 16, lineHeight: 1.15 }}>
-            Power Backup Solutions You Can Trust
+            Inverter Battery Solutions You Can Trust
           </h2>
           <p style={{ fontSize: 17, color: "rgba(255,255,255,0.75)", marginBottom: 36, lineHeight: 1.7, maxWidth: 600, margin: "0 auto 36px" }}>
-            From homes to hospitals, we deliver uninterrupted power. Expert installation, genuine products, after-sales support — all under one roof.
+            From homes to offices, we deliver the right battery at the right price. Expert installation, genuine products, after-sales support — all in Secunderabad.
           </p>
           <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
             <button className="btn-primary" onClick={() => openInquiry(null as any)} style={{ padding: "14px 32px", fontSize: 16 }}>Get Free Quote</button>
-            <a href="https://wa.me/918019179159" target="_blank" rel="noreferrer">
+            <a href="https://wa.me/918143455418" target="_blank" rel="noreferrer">
               <button style={{ background: "#25d366", color: "#fff", border: "none", borderRadius: 8, padding: "14px 32px", fontSize: 16, fontWeight: 600, cursor: "pointer", transition: "filter 0.2s" }}
                 onMouseEnter={(e) => (e.currentTarget.style.filter = "brightness(1.1)")}
                 onMouseLeave={(e) => (e.currentTarget.style.filter = "brightness(1)")}>
@@ -983,7 +983,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
             ))}
           </div>
           <div style={{ textAlign: "center", marginTop: 36 }}>
-            <a href="https://wa.me/918019179159?text=Hi! I'd like to discuss a power backup project." target="_blank" rel="noreferrer">
+            <a href="https://wa.me/918143455418?text=Hi! I'd like to discuss a power backup project." target="_blank" rel="noreferrer">
               <button className="btn-primary" style={{ padding: "13px 32px" }}>Discuss Your Project — Free Consultation</button>
             </a>
           </div>
@@ -1051,10 +1051,9 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
             {/* Left: info */}
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               {[
-                { icon: "📞", label: "Phone", value: "+91 8019179159", href: "tel:+918019179159", color: "#3b82f6" },
-                { icon: "📞", label: "Phone", value: "+91 8019179159", href: "tel:+918019179159", color: "#3b82f6" },
-                { icon: "📧", label: "Email", value: "info@company.com", href: "mailto:info@company.com", color: "#10b981" },
-                { icon: "📍", label: "Address", value: "Plot No. 47, Green Lands Colony, Karmanghat, LB Nagar, Hyderabad 500079", href: "https://maps.app.goo.gl/vtyTimUrenngkoHn9", color: "#f59e0b" },
+                { icon: "📞", label: "Phone", value: "+91 8143455418", href: "tel:+918143455418", color: "#3b82f6" },
+                { icon: "📧", label: "Email", value: "info@srimallibattery.com", href: "mailto:info@srimallibattery.com", color: "#10b981" },
+                { icon: "📍", label: "Address", value: "Annojiguda, Hyderabad, Secunderabad - 501301, Telangana", href: "https://maps.app.goo.gl/vtyTimUrenngkoHn9", color: "#f59e0b" },
               ].map((item) => (
                 <a key={item.label} href={item.href} target={item.label === "Address" ? "_blank" : undefined} rel="noreferrer" style={{ textDecoration: "none" }}>
                   <div className="card-hover" style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", display: "flex", alignItems: "center", gap: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", border: "1px solid #f0f0f0" }}>
@@ -1066,7 +1065,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
                   </div>
                 </a>
               ))}
-              <a href="https://wa.me/918019179159" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+              <a href="https://wa.me/918143455418" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
                 <button style={{ width: "100%", background: "#25d366", color: "#fff", border: "none", borderRadius: 12, padding: "16px", fontSize: 16, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "filter 0.2s" }}
                   onMouseEnter={(e) => (e.currentTarget.style.filter = "brightness(1.1)")}
                   onMouseLeave={(e) => (e.currentTarget.style.filter = "brightness(1)")}>
@@ -1124,9 +1123,9 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
 
       {/* ── READY TO SWITCH CTA ── */}
       <section style={{ background: `linear-gradient(135deg, ${primary} 0%, #059669 100%)`, padding: "72px 24px", textAlign: "center" }}>
-        <h2 style={{ fontSize: "clamp(28px,3vw,44px)", fontWeight: 900, color: "#fff", marginBottom: 16 }}>Ready to Switch to Clean Energy?</h2>
+        <h2 style={{ fontSize: "clamp(28px,3vw,44px)", fontWeight: 900, color: "#fff", marginBottom: 16 }}>Ready to Get the Right Battery?</h2>
         <p style={{ fontSize: 18, color: "rgba(255,255,255,0.88)", marginBottom: 36, maxWidth: 560, margin: "0 auto 36px" }}>
-          Join over 1000+ happy customers who have already made the switch with {tenant.name}.
+          Visit us at Annojiguda, Secunderabad — or call us now for expert advice and same-day battery installation.
         </p>
         <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
           <button className="btn-white" onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })} style={{ padding: "14px 32px", fontSize: 16 }}>Explore Products</button>
@@ -1152,10 +1151,10 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
                 </div>
               </div>
               <p style={{ fontSize: 14, lineHeight: 1.8, marginBottom: 16, maxWidth: 280 }}>
-                Your trusted partner for solar solutions, power backup systems, and battery management across India.
+                Your trusted neighbourhood inverter battery shop in Secunderabad — genuine products, expert advice, fast service.
               </p>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#1e293b", padding: "6px 12px", borderRadius: 20, fontSize: 12, marginBottom: 20 }}>
-                <span style={{ color: primary }}>●</span> GST: 36ABGCS0416A1ZX
+                <span style={{ color: primary }}>●</span> Open from 10 AM · Working Days
               </div>
               {/* Social */}
               <div style={{ display: "flex", gap: 10 }}>
@@ -1195,7 +1194,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
             <div>
               <h4 style={{ color: "#fff", fontSize: 15, fontWeight: 700, marginBottom: 20 }}>Our Products</h4>
               <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
-                {["Solar Solutions", "Inverter / Home UPS", "Jumbo UPS", "Online UPS", "Tubular Battery", "Lithium Batteries", "Combos"].map((p) => (
+                {["Tubular Batteries", "Flat Plate Batteries", "Lithium Batteries", "Inverter / Home UPS", "Online UPS", "Battery Service & Repair"].map((p) => (
                   <li key={p}>
                     <a href="#categories" style={{ color: "#94a3b8", fontSize: 14, textDecoration: "none", transition: "color 0.2s" }}
                       onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
@@ -1211,7 +1210,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
             <div>
               <h4 style={{ color: "#fff", fontSize: 15, fontWeight: 700, marginBottom: 20 }}>Our Services</h4>
               <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
-                {["Solar Energy", "Power Backup & UPS", "Battery Services", "Technical Support & After-Sales"].map((s) => (
+                {["Battery Testing & Diagnosis", "Battery Installation", "Battery Replacement", "Inverter Service & Repair", "UPI & Cash Accepted"].map((s) => (
                   <li key={s}>
                     <a href="#" style={{ color: "#94a3b8", fontSize: 14, textDecoration: "none", transition: "color 0.2s" }}
                       onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
@@ -1223,9 +1222,9 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
               </ul>
               <h4 style={{ color: "#fff", fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Contact Us</h4>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <a href="tel:+918019179159" style={{ color: "#94a3b8", fontSize: 14, textDecoration: "none" }}>📞 +91 8019179159</a>
-                <span style={{ color: "#94a3b8", fontSize: 14 }}>📧 info@company.com</span>
-                <span style={{ color: "#94a3b8", fontSize: 14 }}>📍 Hyderabad, Telangana, India</span>
+                <a href="tel:+918143455418" style={{ color: "#94a3b8", fontSize: 14, textDecoration: "none" }}>📞 +91 8143455418</a>
+                <span style={{ color: "#94a3b8", fontSize: 14 }}>📧 info@srimallibattery.com</span>
+                <span style={{ color: "#94a3b8", fontSize: 14 }}>📍 Annojiguda, Secunderabad - 501301</span>
               </div>
             </div>
           </div>
@@ -1247,7 +1246,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
       </footer>
 
       {/* ── FLOATING WHATSAPP ── */}
-      <a href="https://wa.me/918019179159?text=Hi! I have a query about your products." target="_blank" rel="noreferrer"
+      <a href="https://wa.me/918143455418?text=Hi! I have a query about your products." target="_blank" rel="noreferrer"
         style={{ position: "fixed", bottom: 24, right: 24, zIndex: 999, width: 56, height: 56, background: "#25d366", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, boxShadow: "0 4px 20px rgba(37,211,102,0.4)", textDecoration: "none", transition: "transform 0.2s" }}
         onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
         onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}>
