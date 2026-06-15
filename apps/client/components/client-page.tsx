@@ -389,10 +389,14 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
           <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0, minWidth:0, maxWidth:"50%" }}>
             {tenant?.logo ? <img src={tenant.logo} alt={tenant.name} style={{ height:36, objectFit:"contain" }} /> : (
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <div style={{ width:32, height:32, background:primary, borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>⚡</div>
+                <svg width="36" height="42" viewBox="0 0 56 66" fill="none" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}>
+                  <path d="M28 2 L54 13 L54 36 C54 52 41 61 28 67 C15 61 2 52 2 36 L2 13 Z" fill="#E65C00"/>
+                  <path d="M28 9 L47 19 L47 36 C47 48 37 56 28 60 C19 56 9 48 9 36 L9 19 Z" fill="#FF7A00"/>
+                  <path d="M33 18 L22 36 L29 36 L25 54 L40 32 L33 32 Z" fill="#ffffff"/>
+                </svg>
                 <div style={{ minWidth:0 }}>
                   <div className="nav-logo-text" style={{ fontSize:14, fontWeight:800, color: navbarBg?"#111":"#fff", lineHeight:1.2, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", maxWidth:180 }}>{tenant?.name}</div>
-                  <div className="nav-logo-sub" style={{ fontSize:9, color:primary, fontWeight:600, letterSpacing:1, whiteSpace:"nowrap" }}>BATTERY SERVICE</div>
+                  <div className="nav-logo-sub" style={{ fontSize:9, color:"#E65C00", fontWeight:700, letterSpacing:1.5, whiteSpace:"nowrap", textTransform:"uppercase" }}>Battery Service</div>
                 </div>
               </div>
             )}
@@ -1059,10 +1063,14 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
           <div className="footer-grid" style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:40, marginBottom:40 }}>
             <div>
               <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
-                <div style={{ width:32, height:32, background:primary, borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>⚡</div>
+                <svg width="32" height="37" viewBox="0 0 56 66" fill="none" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}>
+                  <path d="M28 2 L54 13 L54 36 C54 52 41 61 28 67 C15 61 2 52 2 36 L2 13 Z" fill="#E65C00"/>
+                  <path d="M28 9 L47 19 L47 36 C47 48 37 56 28 60 C19 56 9 48 9 36 L9 19 Z" fill="#FF7A00"/>
+                  <path d="M33 18 L22 36 L29 36 L25 54 L40 32 L33 32 Z" fill="#ffffff"/>
+                </svg>
                 <div>
                   <div style={{ fontSize:14, fontWeight:800, color:"#fff" }}>{tenant.name}</div>
-                  <div style={{ fontSize:9, color:primary, fontWeight:600, letterSpacing:1 }}>BATTERY SERVICE</div>
+                  <div style={{ fontSize:9, color:"#E65C00", fontWeight:700, letterSpacing:1.5, textTransform:"uppercase" }}>Battery Service</div>
                 </div>
               </div>
               <p style={{ fontSize:13, lineHeight:1.8, marginBottom:14, maxWidth:260 }}>Your trusted neighbourhood inverter battery shop in Secunderabad — genuine products, expert advice, fast service.</p>
