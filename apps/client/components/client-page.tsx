@@ -318,10 +318,16 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
         .qty-btn{width:32px;height:32px;border-radius:6px;border:2px solid ${primary};background:#fff;color:${primary};font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
         .urgency-badge{background:${primary}15;color:${primary};border:1px solid ${primary}40;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
         .faq-item{border-bottom:1px solid #f0f0f0;padding:16px 0}
-        .sticky-cta{position:fixed;bottom:0;left:0;right:0;z-index:900;background:#fff;border-top:2px solid #f0f0f0;padding:10px 16px;display:flex;gap:8px;justify-content:center}
+        /* Sticky CTA — sits at bottom, above safe area */
+        .sticky-cta{position:fixed;bottom:0;left:0;right:0;z-index:900;background:#fff;border-top:2px solid #f0f0f0;padding:8px 8px;padding-bottom:max(8px,env(safe-area-inset-bottom));display:flex;gap:6px;justify-content:center}
+        .sticky-cta button{font-size:12px!important;padding:10px 6px!important;border-radius:8px}
+        /* Floating buttons sit ABOVE sticky CTA */
+        .float-wa{position:fixed;bottom:72px;right:16px;z-index:800}
+        .float-cb{position:fixed;bottom:130px;right:16px;z-index:800}
         .desktop-nav{display:flex}
         .desktop-phone{display:flex}
         .mobile-menu-btn{display:none!important}
+        /* ── Tablet ── */
         @media(max-width:900px){
           .desktop-nav{display:none!important}
           .desktop-phone{display:none!important}
@@ -336,9 +342,8 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
           .matrix-grid{grid-template-columns:1fr!important}
           .warranty-grid{grid-template-columns:1fr!important}
           .mistakes-grid{grid-template-columns:1fr!important}
-          .hero-btns{gap:10px}
-          .hero-stats{gap:24px}
         }
+        /* ── Mobile ── */
         @media(max-width:600px){
           .desktop-nav{display:none!important}
           .desktop-phone{display:none!important}
@@ -346,17 +351,32 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
           .why-grid{grid-template-columns:1fr 1fr!important}
           .products-grid{grid-template-columns:1fr 1fr!important}
           .footer-grid{grid-template-columns:1fr 1fr!important}
-          .hero-btns{flex-direction:column;width:100%}
-          .hero-btns button{width:100%}
+          .projects-grid{grid-template-columns:1fr!important}
+          .about-grid{grid-template-columns:1fr!important}
+          .warranty-grid{grid-template-columns:1fr!important}
+          .mistakes-grid{grid-template-columns:1fr!important}
+          /* Hero */
+          .hero-btns{flex-direction:column!important;width:100%}
+          .hero-btns button,.hero-btns a{width:100%!important}
+          .hero-stats{gap:16px!important;flex-wrap:nowrap!important}
+          .hero-stat-num{font-size:20px!important}
+          .hero-stat-label{font-size:10px!important}
+          .urgency-row{flex-direction:column!important;gap:6px!important}
+          /* About */
           .about-image{display:none!important}
-          .sticky-cta{padding:8px 10px;gap:6px}
-          .nav-logo-text{font-size:13px!important;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+          /* Nav logo */
+          .nav-logo-text{font-size:12px!important;max-width:140px!important}
           .nav-logo-sub{display:none!important}
+          /* Floating buttons — smaller on mobile */
+          .float-wa{bottom:68px;right:12px}
+          .float-wa button,.float-wa a>div{width:46px!important;height:46px!important;font-size:22px!important}
+          .float-cb{display:none!important}
         }
         @media(max-width:400px){
           .why-grid{grid-template-columns:1fr!important}
           .products-grid{grid-template-columns:1fr!important}
           .footer-grid{grid-template-columns:1fr!important}
+          .hero-stats{gap:12px!important}
         }
         .modal-overlay{position:fixed;inset:0;z-index:3000;display:flex;align-items:flex-end;justify-content:center}
         .modal-box{position:relative;width:100%;max-width:520px;background:#fff;border-radius:20px 20px 0 0;padding:28px 28px 36px;box-shadow:0 -8px 40px rgba(0,0,0,0.15)}
@@ -418,31 +438,31 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
       </nav>
 
       {/* ── HERO ── */}
-      <section style={{ position:"relative", height:"100vh", minHeight:580, overflow:"hidden" }}>
+      <section style={{ position:"relative", height:"100vh", minHeight:560, overflow:"hidden" }}>
         {HERO_SLIDES.map((s,i) => (
           <div key={i} style={{ position:"absolute", inset:0, backgroundImage:`url(${s.bg})`, backgroundSize:"cover", backgroundPosition:"center", opacity: i===heroIdx?1:0, transition:"opacity 0.8s ease", zIndex: i===heroIdx?1:0 }}>
-            <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.45) 60%,rgba(0,0,0,0.2) 100%)" }} />
+            <div style={{ position:"absolute", inset:0, background:"linear-gradient(160deg,rgba(0,0,0,0.82) 0%,rgba(0,0,0,0.55) 60%,rgba(0,0,0,0.3) 100%)" }} />
           </div>
         ))}
-        <div style={{ position:"relative", zIndex:2, height:"100%", display:"flex", flexDirection:"column", justifyContent:"center", padding:"80px 20px 60px", maxWidth:1280, margin:"0 auto", width:"100%" }}>
+        <div style={{ position:"relative", zIndex:2, height:"100%", display:"flex", flexDirection:"column", justifyContent:"center", padding:"72px 16px 80px", maxWidth:1280, margin:"0 auto", width:"100%" }}>
           <div key={heroIdx} className="fade-in">
             {/* Urgency badges */}
-            <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:16 }}>
-              <span className="urgency-badge">⚡ Same Day Installation</span>
-              <span className="urgency-badge">⚡ Free Warranty Registration</span>
+            <div className="urgency-row" style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:12 }}>
+              <span className="urgency-badge" style={{ fontSize:11 }}>⚡ Same Day Installation</span>
+              <span className="urgency-badge" style={{ fontSize:11 }}>⚡ Free Warranty Registration</span>
             </div>
-            <div style={{ display:"inline-block", background:primary, color:"#fff", fontSize:11, fontWeight:700, letterSpacing:2, padding:"5px 12px", borderRadius:20, marginBottom:16, textTransform:"uppercase" }}>{slide.eyebrow}</div>
-            <h1 style={{ fontSize:"clamp(26px,5vw,60px)", fontWeight:900, color:"#fff", lineHeight:1.15, marginBottom:16, maxWidth:680, textShadow:"0 2px 20px rgba(0,0,0,0.3)" }}>{slide.headline}</h1>
-            <p style={{ fontSize:"clamp(14px,2vw,17px)", color:"rgba(255,255,255,0.88)", maxWidth:520, lineHeight:1.7, marginBottom:28 }}>{slide.sub}</p>
-            <div className="hero-btns" style={{ display:"flex", gap:12, flexWrap:"wrap", marginBottom:36 }}>
-              <button className="btn-primary" onClick={() => document.getElementById("products")?.scrollIntoView({behavior:"smooth"})} style={{ padding:"13px 28px", fontSize:15 }}>{slide.cta1} →</button>
-              <button className="btn-white" onClick={() => document.getElementById("calculator")?.scrollIntoView({behavior:"smooth"})} style={{ padding:"13px 28px", fontSize:15 }}>🔋 Battery Calculator</button>
+            <div style={{ display:"inline-block", background:primary, color:"#fff", fontSize:10, fontWeight:700, letterSpacing:1.5, padding:"4px 10px", borderRadius:20, marginBottom:12, textTransform:"uppercase" }}>{slide.eyebrow}</div>
+            <h1 style={{ fontSize:"clamp(22px,4.5vw,58px)", fontWeight:900, color:"#fff", lineHeight:1.18, marginBottom:12, maxWidth:680, textShadow:"0 2px 20px rgba(0,0,0,0.4)" }}>{slide.headline}</h1>
+            <p style={{ fontSize:"clamp(13px,1.8vw,16px)", color:"rgba(255,255,255,0.85)", maxWidth:500, lineHeight:1.65, marginBottom:22 }}>{slide.sub}</p>
+            <div className="hero-btns" style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:28 }}>
+              <button className="btn-primary" onClick={() => document.getElementById("products")?.scrollIntoView({behavior:"smooth"})} style={{ padding:"12px 24px", fontSize:14 }}>{slide.cta1} →</button>
+              <button className="btn-white" onClick={() => document.getElementById("calculator")?.scrollIntoView({behavior:"smooth"})} style={{ padding:"12px 24px", fontSize:14 }}>🔋 Battery Calculator</button>
             </div>
-            <div ref={statsRef} className="hero-stats" style={{ display:"flex", gap:32, flexWrap:"wrap" }}>
+            <div ref={statsRef} className="hero-stats" style={{ display:"flex", gap:24, flexWrap:"nowrap" }}>
               {[{num:`${count1}+`,label:"Happy Customers"},{num:`${count2}+`,label:"Brands Stocked"},{num:`${count3}%`,label:"Repeat Customers"}].map(s => (
-                <div key={s.label}>
-                  <div style={{ fontSize:28, fontWeight:900, color:"#fff", lineHeight:1 }}>{s.num}</div>
-                  <div style={{ fontSize:12, color:"rgba(255,255,255,0.7)", fontWeight:500, marginTop:4 }}>{s.label}</div>
+                <div key={s.label} style={{ flexShrink:0 }}>
+                  <div className="hero-stat-num" style={{ fontSize:26, fontWeight:900, color:"#fff", lineHeight:1 }}>{s.num}</div>
+                  <div className="hero-stat-label" style={{ fontSize:11, color:"rgba(255,255,255,0.75)", fontWeight:500, marginTop:4, whiteSpace:"nowrap" }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -1034,7 +1054,7 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ background:"#0f172a", color:"#cbd5e1", padding:"48px 24px 80px" }}>
+      <footer style={{ background:"#0f172a", color:"#cbd5e1", padding:"48px 24px 100px" }}>
         <div style={{ maxWidth:1280, margin:"0 auto" }}>
           <div className="footer-grid" style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:40, marginBottom:40 }}>
             <div>
@@ -1103,16 +1123,20 @@ export default function ClientPage({ tenant, products }: ClientPageProps) {
       </div>
 
       {/* ── FLOATING WHATSAPP ── */}
-      <a href="https://wa.me/918143455418" target="_blank" rel="noreferrer"
-        style={{ position:"fixed", bottom:80, right:20, zIndex:800, width:52, height:52, background:"#25d366", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, boxShadow:"0 4px 20px rgba(37,211,102,0.4)", textDecoration:"none" }}>
-        💬
-      </a>
+      <div className="float-wa">
+        <a href="https://wa.me/918143455418" target="_blank" rel="noreferrer"
+          style={{ display:"flex", width:52, height:52, background:"#25d366", borderRadius:"50%", alignItems:"center", justifyContent:"center", fontSize:26, boxShadow:"0 4px 20px rgba(37,211,102,0.4)", textDecoration:"none" }}>
+          💬
+        </a>
+      </div>
 
-      {/* ── FLOATING CALLBACK BUTTON ── */}
-      <button onClick={() => setCallbackOpen(true)}
-        style={{ position:"fixed", bottom:140, right:20, zIndex:800, background:primary, color:"#fff", border:"none", borderRadius:24, padding:"10px 16px", fontSize:13, fontWeight:700, cursor:"pointer", boxShadow:`0 4px 20px ${primary}60`, display:"flex", alignItems:"center", gap:6 }}>
-        ☎ Callback
-      </button>
+      {/* ── FLOATING CALLBACK — hidden on mobile via CSS ── */}
+      <div className="float-cb">
+        <button onClick={() => setCallbackOpen(true)}
+          style={{ background:primary, color:"#fff", border:"none", borderRadius:24, padding:"9px 14px", fontSize:12, fontWeight:700, cursor:"pointer", boxShadow:`0 4px 20px ${primary}60`, display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
+          ☎ Callback
+        </button>
+      </div>
 
       {/* ── CART DRAWER ── */}
       {cartOpen && (
